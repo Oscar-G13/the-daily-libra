@@ -5,7 +5,9 @@ export const metadata = { title: "Readings" };
 
 export default async function ReadingPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: userData } = await supabase
     .from("users")

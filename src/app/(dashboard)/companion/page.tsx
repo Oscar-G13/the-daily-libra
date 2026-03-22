@@ -5,9 +5,11 @@ export const metadata = { title: "AI Companion" };
 
 export default async function CompanionPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const [{ data: userData }, { data: libraProfile }] = await Promise.all([
+  const [{ data: userData }] = await Promise.all([
     supabase.from("users").select("display_name, subscription_tier").eq("id", user!.id).single(),
     supabase.from("libra_profiles").select("primary_archetype").eq("user_id", user!.id).single(),
   ]);

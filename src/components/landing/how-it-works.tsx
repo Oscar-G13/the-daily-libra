@@ -6,22 +6,26 @@ const steps = [
   {
     number: "01",
     title: "Enter your birth data",
-    description: "Date, time, and city. This powers your natal chart — Venus, Moon, Rising, and every placement that shapes how you love, think, and move.",
+    description:
+      "Date, time, and city. This powers your natal chart — Venus, Moon, Rising, and every placement that shapes how you love, think, and move.",
   },
   {
     number: "02",
     title: "Take the Libra archetype quiz",
-    description: "12 categories. 7 questions. Profiling your decision style, attachment patterns, conflict avoidance, validation needs, and more. Not cheesy. Not fast.",
+    description:
+      "12 categories. 7 questions. Profiling your decision style, attachment patterns, conflict avoidance, validation needs, and more. Not cheesy. Not fast.",
   },
   {
     number: "03",
     title: "Get your archetype",
-    description: "One primary archetype. One secondary modifier. A profile built around who you actually are as a Libra — not the average Libra.",
+    description:
+      "One primary archetype. One secondary modifier. A profile built around who you actually are as a Libra — not the average Libra.",
   },
   {
     number: "04",
     title: "The app learns you over time",
-    description: "Journal entries, mood logs, what you ask the AI, what you save — all of it builds an evolving model that makes every reading sharper than the last.",
+    description:
+      "Journal entries, mood logs, what you ask the AI, what you save — all of it builds an evolving model that makes every reading sharper than the last.",
   },
 ];
 
@@ -35,7 +39,9 @@ export function LandingHowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <p className="text-xs uppercase tracking-widest text-gold/60 mb-4">Personalization that actually works</p>
+          <p className="text-xs uppercase tracking-widest text-gold/60 mb-4">
+            Personalization that actually works
+          </p>
           <h2 className="font-serif text-display-md text-foreground">
             Four layers of knowing you.
           </h2>

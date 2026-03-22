@@ -24,7 +24,7 @@ interface CompanionChatProps {
   isPremium: boolean;
 }
 
-export function CompanionChat({ displayName, isPremium }: CompanionChatProps) {
+export function CompanionChat({ displayName: _displayName, isPremium }: CompanionChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,10 @@ export function CompanionChat({ displayName, isPremium }: CompanionChatProps) {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      const allMessages = [...messages, userMessage].map(({ role, content }) => ({ role, content }));
+      const allMessages = [...messages, userMessage].map(({ role, content }) => ({
+        role,
+        content,
+      }));
 
       const res = await fetch("/api/ai/companion", {
         method: "POST",
@@ -100,9 +103,7 @@ export function CompanionChat({ displayName, isPremium }: CompanionChatProps) {
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center py-8">
             <span className="text-4xl mb-4">🪞</span>
-            <h3 className="font-serif text-lg text-foreground mb-2">
-              Your reflection companion.
-            </h3>
+            <h3 className="font-serif text-lg text-foreground mb-2">Your reflection companion.</h3>
             <p className="text-sm text-muted-foreground mb-8 max-w-sm">
               Ask about love, your patterns, a decision, your chart — or anything on your mind.
             </p>
@@ -141,9 +142,18 @@ export function CompanionChat({ displayName, isPremium }: CompanionChatProps) {
                     {message.content}
                     {loading && !message.content && (
                       <span className="inline-flex gap-1 mt-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-bounce"
+                          style={{ animationDelay: "0ms" }}
+                        />
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-bounce"
+                          style={{ animationDelay: "150ms" }}
+                        />
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-bounce"
+                          style={{ animationDelay: "300ms" }}
+                        />
                       </span>
                     )}
                   </p>
@@ -154,9 +164,7 @@ export function CompanionChat({ displayName, isPremium }: CompanionChatProps) {
           ))}
         </AnimatePresence>
 
-        {error && (
-          <p className="text-xs text-red-300/80 text-center">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-300/80 text-center">{error}</p>}
 
         <div ref={bottomRef} />
       </div>
@@ -166,7 +174,9 @@ export function CompanionChat({ displayName, isPremium }: CompanionChatProps) {
         {!isPremium && messages.length >= 4 && (
           <p className="text-xs text-gold/60 text-center mb-3">
             Free tier: 5 messages/day.{" "}
-            <a href="/subscription" className="underline hover:text-gold">Upgrade for unlimited</a>
+            <a href="/subscription" className="underline hover:text-gold">
+              Upgrade for unlimited
+            </a>
           </p>
         )}
         <form

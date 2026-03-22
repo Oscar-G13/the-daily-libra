@@ -8,8 +8,17 @@ import { getReadingEmoji, cn } from "@/lib/utils";
 
 const FREE_CATEGORIES: ReadingCategory[] = ["daily"];
 const ALL_CATEGORIES: ReadingCategory[] = [
-  "daily", "love", "friendship", "career", "confidence",
-  "healing", "decision", "shadow", "beauty", "weekly", "monthly",
+  "daily",
+  "love",
+  "friendship",
+  "career",
+  "confidence",
+  "healing",
+  "decision",
+  "shadow",
+  "beauty",
+  "weekly",
+  "monthly",
 ];
 
 interface ReadingHubProps {
@@ -19,12 +28,13 @@ interface ReadingHubProps {
 
 export function ReadingHub({ isPremium, defaultTone }: ReadingHubProps) {
   const [selectedCategory, setSelectedCategory] = useState<ReadingCategory>("daily");
-  const [selectedTone, setSelectedTone] = useState<ReadingTone>(defaultTone as ReadingTone ?? "gentle");
+  const [selectedTone, setSelectedTone] = useState<ReadingTone>(
+    (defaultTone as ReadingTone) ?? "gentle"
+  );
   const [reading, setReading] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const availableCategories = isPremium ? ALL_CATEGORIES : FREE_CATEGORIES;
   const tones: ReadingTone[] = isPremium
     ? ["gentle", "blunt", "poetic", "practical", "seductive"]
     : ["gentle"];
@@ -67,7 +77,9 @@ export function ReadingHub({ isPremium, defaultTone }: ReadingHubProps) {
     <div className="space-y-6">
       {/* Category grid */}
       <div>
-        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">Choose a reading</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
+          Choose a reading
+        </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
           {ALL_CATEGORIES.map((cat) => {
             const locked = !isPremium && !FREE_CATEGORIES.includes(cat);
@@ -151,7 +163,9 @@ export function ReadingHub({ isPremium, defaultTone }: ReadingHubProps) {
                 </div>
                 <p className="font-serif text-base leading-relaxed text-foreground/90">
                   {reading}
-                  {loading && <span className="inline-block w-1 h-4 bg-gold/60 animate-pulse ml-1 align-middle" />}
+                  {loading && (
+                    <span className="inline-block w-1 h-4 bg-gold/60 animate-pulse ml-1 align-middle" />
+                  )}
                 </p>
               </>
             )}

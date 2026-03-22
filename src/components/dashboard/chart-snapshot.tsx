@@ -9,7 +9,9 @@ export function ChartSnapshot({ chart }: ChartSnapshotProps) {
   if (!chart) {
     return (
       <div className="glass-card p-5">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">Chart Snapshot</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
+          Chart Snapshot
+        </p>
         <p className="text-sm text-muted-foreground/60">No chart data yet.</p>
       </div>
     );

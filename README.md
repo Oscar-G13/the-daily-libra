@@ -1,6 +1,6 @@
 # The Daily Libra
 
-> *Built for Libras. Finally.*
+> _Built for Libras. Finally._
 
 A premium, AI-powered astrology web app built exclusively for the Libra sign. Not a generic horoscope with Libra paint on top — a hyper-personalized identity companion powered by birth chart data, behavioral profiling, and memory-aware AI.
 
@@ -16,16 +16,16 @@ The Daily Libra delivers daily readings, natal chart analysis, compatibility rep
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS + shadcn/ui |
-| Animations | Framer Motion |
-| Database & Auth | Supabase (PostgreSQL) |
-| AI | OpenAI GPT-4o + Embeddings |
-| Payments | Stripe |
-| Analytics | PostHog |
+| Layer           | Technology                 |
+| --------------- | -------------------------- |
+| Framework       | Next.js 14 (App Router)    |
+| Language        | TypeScript                 |
+| Styling         | Tailwind CSS + shadcn/ui   |
+| Animations      | Framer Motion              |
+| Database & Auth | Supabase (PostgreSQL)      |
+| AI              | OpenAI GPT-4o + Embeddings |
+| Payments        | Stripe                     |
+| Analytics       | PostHog                    |
 
 ---
 
@@ -146,4 +146,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*The Daily Libra — Your chart. Your contradictions. Your balance.*
+_The Daily Libra — Your chart. Your contradictions. Your balance._

@@ -77,7 +77,8 @@ export function BirthDataStep({ onNext }: BirthDataStepProps) {
           <p className="text-xs uppercase tracking-widest text-gold/60 mb-2">Step 1 of 4</p>
           <h2 className="font-serif text-display-sm text-foreground mb-2">Your birth data.</h2>
           <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-            This powers your natal chart — Venus, Moon, Rising, and every placement that shapes how you love and move through the world.
+            This powers your natal chart — Venus, Moon, Rising, and every placement that shapes how
+            you love and move through the world.
           </p>
 
           {error && (
@@ -103,7 +104,9 @@ export function BirthDataStep({ onNext }: BirthDataStepProps) {
             <div>
               <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1.5 block">
                 Birth Time{" "}
-                <span className="text-muted-foreground/50 normal-case">(optional — but makes your reading sharper)</span>
+                <span className="text-muted-foreground/50 normal-case">
+                  (optional — but makes your reading sharper)
+                </span>
               </label>
               <input
                 type="time"

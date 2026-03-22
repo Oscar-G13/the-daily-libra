@@ -4,9 +4,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
   return (
     <div className="min-h-screen flex flex-col">
       <CosmicBackground />
-      <main className="relative z-10 flex-1">
-        {children}
-      </main>
+      <main className="relative z-10 flex-1">{children}</main>
     </div>
   );
 }

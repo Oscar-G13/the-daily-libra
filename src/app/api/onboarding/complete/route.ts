@@ -4,7 +4,9 @@ import { calculateNatalChart } from "@/lib/astrology/chart";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -38,31 +40,27 @@ export async function POST(req: NextRequest) {
     });
 
     // Save birth profile
-    const { error: birthError } = await supabase
-      .from("birth_profiles")
-      .upsert({
-        user_id: user.id,
-        birth_date: birthDate,
-        birth_time: birthTime || null,
-        birth_city: birthCity,
-        birth_country: birthCountry,
-        timezone,
-        latitude,
-        longitude,
-        natal_chart_json: chart as unknown as Record<string, unknown>,
-      });
+    const { error: birthError } = await supabase.from("birth_profiles").upsert({
+      user_id: user.id,
+      birth_date: birthDate,
+      birth_time: birthTime || null,
+      birth_city: birthCity,
+      birth_country: birthCountry,
+      timezone,
+      latitude,
+      longitude,
+      natal_chart_json: chart as unknown as import("@/types/database.types").Json,
+    });
 
     if (birthError) throw birthError;
 
     // Save Libra profile
-    const { error: libraError } = await supabase
-      .from("libra_profiles")
-      .upsert({
-        user_id: user.id,
-        primary_archetype: quizResult.primaryArchetype,
-        secondary_modifier: quizResult.secondaryModifier,
-        quiz_scores: quizResult.scores,
-      });
+    const { error: libraError } = await supabase.from("libra_profiles").upsert({
+      user_id: user.id,
+      primary_archetype: quizResult.primaryArchetype,
+      secondary_modifier: quizResult.secondaryModifier,
+      quiz_scores: quizResult.scores,
+    });
 
     if (libraError) throw libraError;
 

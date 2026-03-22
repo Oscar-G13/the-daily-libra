@@ -18,7 +18,6 @@ export function QuizStep({ onComplete }: QuizStepProps) {
 
   const question = QUIZ_QUESTIONS[currentQ];
   const isLast = currentQ === QUIZ_QUESTIONS.length - 1;
-  const progress = ((currentQ) / QUIZ_QUESTIONS.length) * 100;
 
   function selectOption(optionId: string) {
     if (transitioning) return;
@@ -51,7 +50,9 @@ export function QuizStep({ onComplete }: QuizStepProps) {
         <div className="mb-10">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
             <span>Step 2 of 4 — Libra Archetype Quiz</span>
-            <span>{currentQ + 1} / {QUIZ_QUESTIONS.length}</span>
+            <span>
+              {currentQ + 1} / {QUIZ_QUESTIONS.length}
+            </span>
           </div>
           <div className="h-0.5 bg-white/[0.06] rounded-full overflow-hidden">
             <motion.div
@@ -70,7 +71,9 @@ export function QuizStep({ onComplete }: QuizStepProps) {
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.3 }}
           >
-            <p className="text-xs text-gold/50 uppercase tracking-widest mb-3">{question.category}</p>
+            <p className="text-xs text-gold/50 uppercase tracking-widest mb-3">
+              {question.category}
+            </p>
             <h2 className="font-serif text-display-xs text-foreground mb-8 leading-snug">
               {question.text}
             </h2>

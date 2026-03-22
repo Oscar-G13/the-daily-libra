@@ -16,9 +16,7 @@ export function DashboardNav() {
 
   return (
     <header className="sticky top-0 z-30 h-14 border-b border-white/[0.04] bg-obsidian/80 backdrop-blur-md flex items-center justify-between px-6">
-      <p className="text-xs text-muted-foreground hidden sm:block">
-        {formatDate(new Date())}
-      </p>
+      <p className="text-xs text-muted-foreground hidden sm:block">{formatDate(new Date())}</p>
       <div className="flex items-center gap-4 ml-auto">
         <button
           onClick={handleSignOut}

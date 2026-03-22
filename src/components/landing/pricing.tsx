@@ -49,8 +49,7 @@ export function LandingPricing() {
         >
           <p className="text-xs uppercase tracking-widest text-gold/60 mb-4">Pricing</p>
           <h2 className="font-serif text-display-md text-foreground">
-            Start free.{" "}
-            <span className="text-gold-gradient italic">Go deeper with Premium.</span>
+            Start free. <span className="text-gold-gradient italic">Go deeper with Premium.</span>
           </h2>
         </motion.div>
 
@@ -62,7 +61,9 @@ export function LandingPricing() {
             viewport={{ once: true }}
             className="glass-card p-7"
           >
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">{freeTier.name}</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+              {freeTier.name}
+            </p>
             <div className="flex items-baseline gap-1 mb-6">
               <span className="font-serif text-3xl text-foreground">{freeTier.price}</span>
               <span className="text-sm text-muted-foreground">{freeTier.interval}</span>
@@ -94,7 +95,9 @@ export function LandingPricing() {
             <div className="premium-border-inner p-7">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs uppercase tracking-widest text-gold/70">{premiumTier.name}</p>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gold/10 text-gold-200 border border-gold/20">Most Popular</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gold/10 text-gold-200 border border-gold/20">
+                  Most Popular
+                </span>
               </div>
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="font-serif text-3xl text-gold-gradient">{premiumTier.price}</span>

@@ -6,7 +6,9 @@ import type { ReadingCategory, ReadingTone, LibraArchetype, ArchetypeModifier } 
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,14 +20,14 @@ export async function POST(req: NextRequest) {
   const userNote: string | undefined = body.note;
 
   // Fetch user data
-  const [
-    { data: userData },
-    { data: birthProfile },
-    { data: libraProfile },
-  ] = await Promise.all([
+  const [{ data: userData }, { data: birthProfile }, { data: libraProfile }] = await Promise.all([
     supabase.from("users").select("display_name, tone_preference").eq("id", user.id).single(),
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
-    supabase.from("libra_profiles").select("primary_archetype, secondary_modifier, ai_memory_summary").eq("user_id", user.id).single(),
+    supabase
+      .from("libra_profiles")
+      .select("primary_archetype, secondary_modifier, ai_memory_summary")
+      .eq("user_id", user.id)
+      .single(),
   ]);
 
   if (!userData || !birthProfile || !libraProfile) {

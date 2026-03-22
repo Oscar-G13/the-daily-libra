@@ -4,14 +4,16 @@ import { getStripeClient, PLANS } from "@/lib/stripe/client";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json();
-  const planKey = body.plan as keyof typeof PLANS ?? "premium_monthly";
+  const planKey = (body.plan as keyof typeof PLANS) ?? "premium_monthly";
   const plan = PLANS[planKey];
 
   if (!plan) {

@@ -19,13 +19,13 @@ npm run dev
 
 ## Branch Strategy
 
-| Branch | Purpose |
-|---|---|
-| `main` | Production — protected, requires PR |
-| `develop` | Integration branch |
-| `feat/*` | Feature branches |
-| `fix/*` | Bug fix branches |
-| `chore/*` | Tooling, deps, config |
+| Branch    | Purpose                             |
+| --------- | ----------------------------------- |
+| `main`    | Production — protected, requires PR |
+| `develop` | Integration branch                  |
+| `feat/*`  | Feature branches                    |
+| `fix/*`   | Bug fix branches                    |
+| `chore/*` | Tooling, deps, config               |
 
 **Always branch off `develop`, never `main`.**
 
@@ -46,6 +46,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`
 
 Examples:
+
 ```
 feat(onboarding): add Libra archetype quiz step 3
 fix(reading): correct archetype context passed to OpenAI prompt
@@ -63,6 +64,7 @@ chore(deps): upgrade framer-motion to v11
 - **Imports**: use `@/` alias for all internal imports
 
 Run before committing:
+
 ```bash
 npm run lint:fix
 npm run format
@@ -90,6 +92,7 @@ Never commit `.env.local` or any real credentials. Use `.env.example` to documen
 ## AI Prompt Guidelines
 
 When modifying prompts in `src/lib/openai/prompts/`:
+
 - Keep outputs emotionally intelligent and Libra-specific
 - Avoid vague filler, fear-based predictions, or generic horoscope language
 - Test against multiple archetypes before submitting

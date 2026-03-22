@@ -8,7 +8,9 @@ export const metadata = { title: "My Profile" };
 
 export default async function ProfilePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const [{ data: userData }, { data: libraProfile }, { data: birthProfile }] = await Promise.all([
     supabase.from("users").select("*").eq("id", user!.id).single(),
@@ -33,7 +35,9 @@ export default async function ProfilePage() {
         <div className="glass-card p-7 border-gold/10">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Primary Archetype</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                Primary Archetype
+              </p>
               <h2 className="font-serif text-display-xs text-gold-gradient">
                 {ARCHETYPE_LABELS[archetype]}
               </h2>
@@ -53,7 +57,10 @@ export default async function ProfilePage() {
 
           <div className="flex flex-wrap gap-2">
             {archetypeData.traits.map((trait) => (
-              <span key={trait} className="text-xs px-3 py-1 rounded-full border border-white/[0.08] text-muted-foreground">
+              <span
+                key={trait}
+                className="text-xs px-3 py-1 rounded-full border border-white/[0.08] text-muted-foreground"
+              >
                 {trait}
               </span>
             ))}
@@ -64,7 +71,9 @@ export default async function ProfilePage() {
       {/* Chart summary */}
       {chart && (
         <div className="glass-card p-6">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Natal Chart</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">
+            Natal Chart
+          </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {[
@@ -73,9 +82,17 @@ export default async function ProfilePage() {
               { label: "Rising", value: chart.ascendant?.sign, icon: "↑" },
               { label: "Venus", value: chart.venus?.sign, house: chart.venus?.house, icon: "♀" },
               { label: "Mars", value: chart.mars?.sign, house: chart.mars?.house, icon: "♂" },
-              { label: "Mercury", value: chart.mercury?.sign, house: chart.mercury?.house, icon: "☿" },
+              {
+                label: "Mercury",
+                value: chart.mercury?.sign,
+                house: chart.mercury?.house,
+                icon: "☿",
+              },
             ].map(({ label, value, house, icon }) => (
-              <div key={label} className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div
+                key={label}
+                className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]"
+              >
                 <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                   <span>{icon}</span> {label}
                 </p>
@@ -104,7 +121,9 @@ export default async function ProfilePage() {
             )}
             <div className="flex justify-between">
               <span className="text-muted-foreground">Location</span>
-              <span className="text-foreground/80">{birthProfile.birth_city}, {birthProfile.birth_country}</span>
+              <span className="text-foreground/80">
+                {birthProfile.birth_city}, {birthProfile.birth_country}
+              </span>
             </div>
           </div>
         </div>
@@ -113,7 +132,9 @@ export default async function ProfilePage() {
       {/* User preferences */}
       {userData && (
         <div className="glass-card p-6">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Preferences</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">
+            Preferences
+          </p>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Reading tone</span>
@@ -125,10 +146,10 @@ export default async function ProfilePage() {
                 <span className="text-foreground/80">{userData.pronouns}</span>
               </div>
             )}
-            {userData.goals?.length > 0 && (
+            {(userData.goals?.length ?? 0) > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Focus areas</span>
-                <span className="text-foreground/80">{userData.goals.join(", ")}</span>
+                <span className="text-foreground/80">{userData.goals?.join(", ")}</span>
               </div>
             )}
           </div>

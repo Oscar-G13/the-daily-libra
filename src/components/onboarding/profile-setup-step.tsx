@@ -59,11 +59,15 @@ export function ProfileSetupStep({ onComplete, saving }: ProfileSetupStepProps) 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-xs uppercase tracking-widest text-gold/60 mb-2">Final Step</p>
           <h2 className="font-serif text-display-sm text-foreground mb-2">A few more things.</h2>
-          <p className="text-sm text-muted-foreground mb-8">All optional — but they make your readings sharper.</p>
+          <p className="text-sm text-muted-foreground mb-8">
+            All optional — but they make your readings sharper.
+          </p>
 
           {/* Pronouns */}
           <div className="mb-7">
-            <label className="text-xs text-muted-foreground uppercase tracking-wide mb-3 block">Pronouns</label>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide mb-3 block">
+              Pronouns
+            </label>
             <div className="flex flex-wrap gap-2">
               {PRONOUNS.map((p) => (
                 <button
@@ -104,7 +108,8 @@ export function ProfileSetupStep({ onComplete, saving }: ProfileSetupStepProps) 
           {/* Goals */}
           <div className="mb-7">
             <label className="text-xs text-muted-foreground uppercase tracking-wide mb-3 block">
-              What do you want help with most? <span className="normal-case text-muted-foreground/50">(pick all that apply)</span>
+              What do you want help with most?{" "}
+              <span className="normal-case text-muted-foreground/50">(pick all that apply)</span>
             </label>
             <div className="flex flex-wrap gap-2">
               {GOALS.map((goal) => (

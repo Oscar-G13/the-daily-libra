@@ -29,12 +29,16 @@ export function ArchetypeResultStep({ result, onNext }: ArchetypeResultStepProps
           transition={{ duration: 0.6 }}
           className="relative"
         >
-          <p className="text-xs uppercase tracking-widest text-gold/60 mb-4">Your Libra Archetype</p>
+          <p className="text-xs uppercase tracking-widest text-gold/60 mb-4">
+            Your Libra Archetype
+          </p>
 
           <div className="glass-card p-8 mb-6 text-left">
             <div className="text-center mb-6">
               <span className="font-serif text-5xl block mb-3">⚖</span>
-              <h2 className="font-serif text-display-md text-gold-gradient mb-2">{archetypeLabel}</h2>
+              <h2 className="font-serif text-display-md text-gold-gradient mb-2">
+                {archetypeLabel}
+              </h2>
               <span className="text-xs px-3 py-1 rounded-full border border-gold/20 text-gold/60">
                 + {modifierLabel}
               </span>
@@ -61,8 +65,8 @@ export function ArchetypeResultStep({ result, onNext }: ArchetypeResultStepProps
           </div>
 
           <p className="text-sm text-muted-foreground mb-8">
-            Every reading, insight, and reflection you receive will be built around this profile.
-            It will evolve as the app learns more about you.
+            Every reading, insight, and reflection you receive will be built around this profile. It
+            will evolve as the app learns more about you.
           </p>
 
           <button

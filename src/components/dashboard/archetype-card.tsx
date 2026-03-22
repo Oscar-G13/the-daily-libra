@@ -12,7 +12,9 @@ export function ArchetypeCard({ archetype, modifier }: ArchetypeCardProps) {
   if (!archetype) {
     return (
       <div className="glass-card p-5 h-full">
-        <p className="text-xs text-muted-foreground">Complete your profile to see your archetype.</p>
+        <p className="text-xs text-muted-foreground">
+          Complete your profile to see your archetype.
+        </p>
       </div>
     );
   }

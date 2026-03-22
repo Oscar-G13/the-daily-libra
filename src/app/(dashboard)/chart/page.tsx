@@ -6,7 +6,9 @@ export const metadata = { title: "Birth Chart" };
 
 export default async function ChartPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: birthProfile } = await supabase
     .from("birth_profiles")
@@ -20,9 +22,7 @@ export default async function ChartPage() {
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="font-serif text-display-xs text-foreground">Birth Chart</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Your natal map — in plain language.
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">Your natal map — in plain language.</p>
       </div>
 
       <ChartView

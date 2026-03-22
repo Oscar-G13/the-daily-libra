@@ -89,7 +89,12 @@ export function CosmicBackground() {
         [cx + 55, cy + 55],
       ];
       const constellationLines = [
-        [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6],
+        [0, 1],
+        [0, 2],
+        [1, 3],
+        [2, 4],
+        [3, 5],
+        [4, 6],
       ];
 
       ctx.strokeStyle = "rgba(201, 168, 76, 0.08)";
@@ -120,10 +125,6 @@ export function CosmicBackground() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
-      aria-hidden="true"
-    />
+    <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" aria-hidden="true" />
   );
 }

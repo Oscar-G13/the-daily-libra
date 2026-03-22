@@ -12,7 +12,7 @@ interface DailyReadingCardProps {
 }
 
 export function DailyReadingCard({
-  userId,
+  userId: _userId,
   tone,
   existingReading,
   readingDate,
@@ -20,7 +20,9 @@ export function DailyReadingCard({
   const today = new Date().toISOString().split("T")[0];
   const hasToday = readingDate === today && existingReading;
 
-  const [reading, setReading] = useState<string | null>(existingReading && hasToday ? existingReading : null);
+  const [reading, setReading] = useState<string | null>(
+    existingReading && hasToday ? existingReading : null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,8 +65,12 @@ export function DailyReadingCard({
     <div className="reading-card h-full min-h-[280px] flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-0.5">Daily Reading</p>
-          <span className="text-xs text-gold/50">{tone.charAt(0).toUpperCase() + tone.slice(1)} tone</span>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-0.5">
+            Daily Reading
+          </p>
+          <span className="text-xs text-gold/50">
+            {tone.charAt(0).toUpperCase() + tone.slice(1)} tone
+          </span>
         </div>
         <span className="text-xl">☀️</span>
       </div>
@@ -79,7 +85,9 @@ export function DailyReadingCard({
               className="font-serif text-base leading-relaxed text-foreground/90"
             >
               {reading}
-              {loading && <span className="inline-block w-1 h-4 bg-gold/60 animate-pulse ml-1 align-middle" />}
+              {loading && (
+                <span className="inline-block w-1 h-4 bg-gold/60 animate-pulse ml-1 align-middle" />
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -92,7 +100,9 @@ export function DailyReadingCard({
                 <p className="text-sm text-red-300/80 mb-4">{error}</p>
               ) : (
                 <p className="text-sm text-muted-foreground mb-6">
-                  Your daily reading is waiting.<br />Generated fresh from your chart and archetype.
+                  Your daily reading is waiting.
+                  <br />
+                  Generated fresh from your chart and archetype.
                 </p>
               )}
               <button

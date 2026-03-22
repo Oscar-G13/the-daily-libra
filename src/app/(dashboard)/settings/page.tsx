@@ -20,7 +20,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data } = await supabase
@@ -41,7 +43,9 @@ export default function SettingsPage() {
 
   async function handleSave() {
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     await supabase
@@ -96,7 +100,9 @@ export default function SettingsPage() {
           </div>
 
           <div className="glass-card p-6">
-            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Default Reading Tone</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">
+              Default Reading Tone
+            </p>
             <div className="space-y-2">
               {TONES.map((t) => (
                 <button

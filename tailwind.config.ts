@@ -110,7 +110,8 @@ const config: Config = {
       backgroundImage: {
         "cosmic-gradient": "radial-gradient(ellipse at top, #2D1B4E 0%, #0A0A0B 50%, #1A1A2E 100%)",
         "gold-shimmer": "linear-gradient(135deg, #C9A84C 0%, #B8860B 50%, #C9A84C 100%)",
-        "card-glass": "linear-gradient(135deg, rgba(201, 168, 76, 0.05) 0%, rgba(45, 27, 78, 0.1) 100%)",
+        "card-glass":
+          "linear-gradient(135deg, rgba(201, 168, 76, 0.05) 0%, rgba(45, 27, 78, 0.1) 100%)",
       },
       boxShadow: {
         "glow-gold": "0 0 20px rgba(201, 168, 76, 0.3), 0 0 40px rgba(201, 168, 76, 0.1)",
@@ -124,8 +125,8 @@ const config: Config = {
         "fade-in": "fade-in 0.6s ease-out forwards",
         "slide-up": "slide-up 0.5s ease-out forwards",
         "glow-pulse": "glow-pulse 3s ease-in-out infinite",
-        "float": "float 6s ease-in-out infinite",
-        "shimmer": "shimmer 2s linear infinite",
+        float: "float 6s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
         "particle-drift": "particle-drift 20s linear infinite",
       },
       keyframes: {

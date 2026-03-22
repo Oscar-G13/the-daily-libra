@@ -18,7 +18,10 @@ const DAILY_RITUALS = [
   {
     theme: "Clarity",
     items: [
-      { label: "Today's energy", value: "Mental clarity arrives when you stop seeking permission." },
+      {
+        label: "Today's energy",
+        value: "Mental clarity arrives when you stop seeking permission.",
+      },
       { label: "What to lean toward", value: "One decision you've been deferring." },
       { label: "What to avoid", value: "Asking for opinions on something you already know." },
       { label: "Beauty ritual", value: "Declutter one physical space today." },

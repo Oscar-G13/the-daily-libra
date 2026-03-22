@@ -5,7 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatShortDate } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
 
-const MOOD_TAGS = ["grounded", "anxious", "romantic", "clear", "conflicted", "open", "guarded", "inspired", "drained", "powerful"];
+const MOOD_TAGS = [
+  "grounded",
+  "anxious",
+  "romantic",
+  "clear",
+  "conflicted",
+  "open",
+  "guarded",
+  "inspired",
+  "drained",
+  "powerful",
+];
 
 interface JournalEntry {
   id: string;
@@ -65,9 +76,7 @@ export function JournalView({ initialEntries, isPremium }: JournalViewProps) {
         <div>
           {freeLimitReached ? (
             <div className="glass-card p-5 text-center">
-              <p className="text-sm text-muted-foreground mb-3">
-                Free tier: 3 entries/month.{" "}
-              </p>
+              <p className="text-sm text-muted-foreground mb-3">Free tier: 3 entries/month. </p>
               <a
                 href="/subscription"
                 className="text-sm text-gold-200 hover:text-gold transition-colors"
@@ -98,7 +107,10 @@ export function JournalView({ initialEntries, isPremium }: JournalViewProps) {
           >
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm font-medium text-foreground">New entry</p>
-              <button onClick={() => setComposing(false)} className="text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setComposing(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>

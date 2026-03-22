@@ -10,6 +10,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+
 - Phase 1 MVP: landing page, auth, onboarding, dashboard, AI reading engine, journal, subscription
 
 ---
@@ -17,6 +18,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.1.0] - 2026-03-21
 
 ### Added
+
 - Initial project scaffold
 - Next.js 14 App Router structure
 - Supabase auth integration (email + Google OAuth)

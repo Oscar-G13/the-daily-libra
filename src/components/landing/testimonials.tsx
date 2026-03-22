@@ -9,17 +9,20 @@ const testimonials = [
     detail: "Velvet Diplomat · Venus in Libra",
   },
   {
-    quote: "I've tried every astrology app. This is the only one that doesn't feel like it was written for everyone.",
+    quote:
+      "I've tried every astrology app. This is the only one that doesn't feel like it was written for everyone.",
     name: "Jordan R.",
     detail: "Elegant Overthinker · Scorpio Moon",
   },
   {
-    quote: "The companion remembered what I said about my ex three weeks later and referenced it. I was not ready for that.",
+    quote:
+      "The companion remembered what I said about my ex three weeks later and referenced it. I was not ready for that.",
     name: "Celeste T.",
     detail: "Mirror Heart · Rising Libra",
   },
   {
-    quote: "I came for the daily reading. I stayed because the decision decoder literally helped me leave a situation I'd been stuck in for months.",
+    quote:
+      "I came for the daily reading. I stayed because the decision decoder literally helped me leave a situation I'd been stuck in for months.",
     name: "Nadia K.",
     detail: "People Pleaser in Recovery",
   },
@@ -35,7 +38,9 @@ export function LandingTestimonials() {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <p className="text-xs uppercase tracking-widest text-gold/60 mb-4">From Libras who felt seen</p>
+          <p className="text-xs uppercase tracking-widest text-gold/60 mb-4">
+            From Libras who felt seen
+          </p>
           <h2 className="font-serif text-display-sm text-foreground">
             The mirror doesn&apos;t flatter you.{" "}
             <span className="text-gold-gradient italic">It sees you.</span>

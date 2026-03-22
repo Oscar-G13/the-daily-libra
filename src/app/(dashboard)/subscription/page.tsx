@@ -54,7 +54,8 @@ export default function SubscriptionPage() {
         <div className="mb-8">
           <h1 className="font-serif text-display-sm text-foreground">Go Premium.</h1>
           <p className="text-muted-foreground mt-2">
-            Unlock the full experience — unlimited readings, memory-aware AI, and everything built for Libras who take their inner life seriously.
+            Unlock the full experience — unlimited readings, memory-aware AI, and everything built
+            for Libras who take their inner life seriously.
           </p>
         </div>
 

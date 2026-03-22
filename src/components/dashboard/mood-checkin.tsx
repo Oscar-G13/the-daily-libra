@@ -16,9 +16,11 @@ interface MoodCheckinProps {
   todaysMood: Record<string, number | string | null> | null;
 }
 
-export function MoodCheckin({ userId, todaysMood }: MoodCheckinProps) {
+export function MoodCheckin({ userId: _userId, todaysMood }: MoodCheckinProps) {
   const [saved, setSaved] = useState(!!todaysMood);
-  const [selected, setSelected] = useState<number | null>(todaysMood ? (todaysMood.mood_score as number) : null);
+  const [selected, setSelected] = useState<number | null>(
+    todaysMood ? (todaysMood.mood_score as number) : null
+  );
   const [saving, setSaving] = useState(false);
 
   async function saveMood(score: number) {
@@ -42,7 +44,9 @@ export function MoodCheckin({ userId, todaysMood }: MoodCheckinProps) {
   return (
     <div className="glass-card p-5 flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest">Today&apos;s Energy</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest">
+          Today&apos;s Energy
+        </p>
         <span className="text-lg">🎚️</span>
       </div>
 

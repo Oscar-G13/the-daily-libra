@@ -61,10 +61,7 @@ export async function POST(req: NextRequest) {
           status: "canceled",
         });
 
-        await supabase
-          .from("users")
-          .update({ subscription_tier: "free" })
-          .eq("id", userId);
+        await supabase.from("users").update({ subscription_tier: "free" }).eq("id", userId);
       }
       break;
     }

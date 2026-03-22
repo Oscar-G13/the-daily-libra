@@ -10,7 +10,9 @@ import type { NatalChart } from "@/types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const [
     { data: userData },
@@ -19,11 +21,27 @@ export default async function DashboardPage() {
     { data: todaysMood },
     { data: latestReading },
   ] = await Promise.all([
-    supabase.from("users").select("display_name, tone_preference, subscription_tier").eq("id", user!.id).single(),
+    supabase
+      .from("users")
+      .select("display_name, tone_preference, subscription_tier")
+      .eq("id", user!.id)
+      .single(),
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user!.id).single(),
     supabase.from("libra_profiles").select("*").eq("user_id", user!.id).single(),
-    supabase.from("mood_logs").select("*").eq("user_id", user!.id).eq("log_date", new Date().toISOString().split("T")[0]).single(),
-    supabase.from("daily_readings").select("*").eq("user_id", user!.id).eq("category", "daily").order("created_at", { ascending: false }).limit(1).single(),
+    supabase
+      .from("mood_logs")
+      .select("*")
+      .eq("user_id", user!.id)
+      .eq("log_date", new Date().toISOString().split("T")[0])
+      .single(),
+    supabase
+      .from("daily_readings")
+      .select("*")
+      .eq("user_id", user!.id)
+      .eq("category", "daily")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single(),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;

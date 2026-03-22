@@ -39,12 +39,14 @@ export function DashboardSidebar({ displayName, tier }: DashboardSidebarProps) {
       {/* User */}
       <div className="px-5 py-4 border-b border-white/[0.04]">
         <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-        <span className={cn(
-          "text-xs px-2 py-0.5 rounded-full inline-block mt-1",
-          tier === "premium"
-            ? "bg-gold/10 text-gold-200 border border-gold/20"
-            : "bg-white/[0.04] text-muted-foreground border border-white/[0.06]"
-        )}>
+        <span
+          className={cn(
+            "text-xs px-2 py-0.5 rounded-full inline-block mt-1",
+            tier === "premium"
+              ? "bg-gold/10 text-gold-200 border border-gold/20"
+              : "bg-white/[0.04] text-muted-foreground border border-white/[0.06]"
+          )}
+        >
           {tier === "premium" ? "✦ Premium" : "Free"}
         </span>
       </div>
@@ -52,7 +54,9 @@ export function DashboardSidebar({ displayName, tier }: DashboardSidebarProps) {
       {/* Nav */}
       <nav className="flex-1 p-4 space-y-1">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}

@@ -16,26 +16,41 @@ interface ReadingContext {
 }
 
 const TONE_INSTRUCTIONS: Record<ReadingTone, string> = {
-  gentle: "Write with warmth, empathy, and soft encouragement. Be reassuring without being dismissive of real challenges.",
-  blunt: "Be direct, clear, and honest without softening the truth. No fluff. Still compassionate but not coddling.",
-  poetic: "Write with lyrical, evocative language. Use metaphor, imagery, and rhythm. Mystical but not vague.",
-  practical: "Give grounded, actionable insights. Avoid mystical language. Focus on real patterns and concrete steps.",
-  seductive: "Write with confident, empowering energy. Sensual undertones but tasteful. Make the reader feel magnetic.",
+  gentle:
+    "Write with warmth, empathy, and soft encouragement. Be reassuring without being dismissive of real challenges.",
+  blunt:
+    "Be direct, clear, and honest without softening the truth. No fluff. Still compassionate but not coddling.",
+  poetic:
+    "Write with lyrical, evocative language. Use metaphor, imagery, and rhythm. Mystical but not vague.",
+  practical:
+    "Give grounded, actionable insights. Avoid mystical language. Focus on real patterns and concrete steps.",
+  seductive:
+    "Write with confident, empowering energy. Sensual undertones but tasteful. Make the reader feel magnetic.",
 };
 
 const CATEGORY_FOCUS: Record<ReadingCategory, string> = {
   daily: "today's energy, what to lean into, what to be careful about, and a reflection question",
-  weekly: "the week's emotional arc, key opportunities, a relationship theme, and an action to take",
-  monthly: "the month's overarching theme, growth area, relationship pattern to notice, and a monthly intention",
+  weekly:
+    "the week's emotional arc, key opportunities, a relationship theme, and an action to take",
+  monthly:
+    "the month's overarching theme, growth area, relationship pattern to notice, and a monthly intention",
   love: "romantic patterns, what they give vs. what they need, current relationship energy, and honest guidance",
-  friendship: "social energy, connection needs, any people-pleasing patterns, and who deserves their time",
-  career: "purpose alignment, ambition vs. peace tension, a practical career move, and confidence in their gifts",
-  confidence: "self-worth patterns, what's dimming their light, where they're performing vs. being real",
-  healing: "an emotional wound to acknowledge, a pattern to release, a gentler story to tell themselves",
-  decision: "the decision's emotional stakes, where fear is distorting clarity, what alignment looks like",
-  shadow: "a blind spot, a contradiction they live in, the part of themselves they avoid looking at",
-  beauty: "their current aesthetic energy, how their environment reflects their inner state, a beauty ritual",
-  compatibility: "how their Libra nature shows up in this connection, what they give, what they need back",
+  friendship:
+    "social energy, connection needs, any people-pleasing patterns, and who deserves their time",
+  career:
+    "purpose alignment, ambition vs. peace tension, a practical career move, and confidence in their gifts",
+  confidence:
+    "self-worth patterns, what's dimming their light, where they're performing vs. being real",
+  healing:
+    "an emotional wound to acknowledge, a pattern to release, a gentler story to tell themselves",
+  decision:
+    "the decision's emotional stakes, where fear is distorting clarity, what alignment looks like",
+  shadow:
+    "a blind spot, a contradiction they live in, the part of themselves they avoid looking at",
+  beauty:
+    "their current aesthetic energy, how their environment reflects their inner state, a beauty ritual",
+  compatibility:
+    "how their Libra nature shows up in this connection, what they give, what they need back",
   custom: "whatever the user brings to the reading — stay fully present and personalized",
 };
 

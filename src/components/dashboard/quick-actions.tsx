@@ -38,9 +38,7 @@ export function QuickActions({ tier }: QuickActionsProps) {
               <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
                 {action.label}
               </span>
-              {locked && (
-                <span className="text-[10px] text-gold/50 mt-0.5">Premium</span>
-              )}
+              {locked && <span className="text-[10px] text-gold/50 mt-0.5">Premium</span>}
             </Link>
           );
         })}

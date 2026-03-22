@@ -21,13 +21,13 @@ export function LandingHero() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[300px] h-[300px] rounded-full bg-bronze/10 blur-[80px]" />
       </div>
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        className="relative max-w-4xl mx-auto"
-      >
+      <motion.div initial="hidden" animate="visible" className="relative max-w-4xl mx-auto">
         {/* Badge */}
-        <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/20 bg-gold/5 text-gold-200 text-xs font-medium tracking-widest uppercase mb-8">
+        <motion.div
+          custom={0}
+          variants={fadeUp}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/20 bg-gold/5 text-gold-200 text-xs font-medium tracking-widest uppercase mb-8"
+        >
           <span>♎</span>
           <span>Libra Only · AI Powered · Deeply Personal</span>
           <span>♎</span>
@@ -39,8 +39,7 @@ export function LandingHero() {
           variants={fadeUp}
           className="font-serif text-display-xl md:text-display-2xl text-foreground leading-tight mb-6"
         >
-          Built for Libras.{" "}
-          <span className="text-gold-gradient italic">Finally.</span>
+          Built for Libras. <span className="text-gold-gradient italic">Finally.</span>
         </motion.h1>
 
         {/* Subheadline */}
@@ -49,18 +48,24 @@ export function LandingHero() {
           variants={fadeUp}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-10"
         >
-          AI readings powered by your birth chart, your archetype, and your actual patterns.
-          Not a generic horoscope. A mirror.
+          AI readings powered by your birth chart, your archetype, and your actual patterns. Not a
+          generic horoscope. A mirror.
         </motion.p>
 
         {/* CTAs */}
-        <motion.div custom={0.3} variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <motion.div
+          custom={0.3}
+          variants={fadeUp}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+        >
           <Link
             href="/signup"
             className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-gold-200 to-bronze text-obsidian font-semibold text-base hover:opacity-90 transition-all glow-gold"
           >
             Start Your Libra Profile
-            <span className="ml-2 inline-block group-hover:translate-x-1 transition-transform">→</span>
+            <span className="ml-2 inline-block group-hover:translate-x-1 transition-transform">
+              →
+            </span>
           </Link>
           <Link
             href="#archetypes"
@@ -71,7 +76,11 @@ export function LandingHero() {
         </motion.div>
 
         {/* Social proof */}
-        <motion.div custom={0.4} variants={fadeUp} className="mt-12 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+        <motion.div
+          custom={0.4}
+          variants={fadeUp}
+          className="mt-12 flex items-center justify-center gap-6 text-sm text-muted-foreground"
+        >
           <span className="flex items-center gap-1.5">
             <span className="text-gold">✦</span>
             Personalized to your chart
@@ -99,12 +108,15 @@ export function LandingHero() {
         <div className="flex items-start gap-3 mb-4">
           <span className="text-2xl">☀️</span>
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Daily Reading · Gentle Tone</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+              Daily Reading · Gentle Tone
+            </p>
             <p className="text-xs text-gold/60">The Velvet Diplomat · Venus in Libra</p>
           </div>
         </div>
         <p className="font-serif text-lg leading-relaxed text-foreground/90 italic">
-          &ldquo;Today asks you to stop managing everyone else&apos;s comfort and ask what yours actually requires. Your diplomacy is a gift — but not when it costs you the truth.&rdquo;
+          &ldquo;Today asks you to stop managing everyone else&apos;s comfort and ask what yours
+          actually requires. Your diplomacy is a gift — but not when it costs you the truth.&rdquo;
         </p>
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
           <span className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-pulse" />

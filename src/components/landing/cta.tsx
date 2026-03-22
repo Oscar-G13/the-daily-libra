@@ -18,9 +18,8 @@ export function LandingCTA() {
         >
           <span className="font-serif text-5xl block mb-6">⚖</span>
           <h2 className="font-serif text-display-lg text-foreground mb-4">
-            Your chart.{" "}
-            <span className="text-gold-gradient italic">Your contradictions.</span>{" "}
-            Your balance.
+            Your chart. <span className="text-gold-gradient italic">Your contradictions.</span> Your
+            balance.
           </h2>
           <p className="text-muted-foreground text-lg mb-10 max-w-xl mx-auto">
             Start free. Discover your Libra archetype in 5 minutes. Get your first AI reading today.

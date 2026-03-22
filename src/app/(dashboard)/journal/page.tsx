@@ -5,7 +5,9 @@ export const metadata = { title: "Journal" };
 
 export default async function JournalPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: entries } = await supabase
     .from("journal_entries")

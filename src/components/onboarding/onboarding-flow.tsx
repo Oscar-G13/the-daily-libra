@@ -34,14 +34,14 @@ interface OnboardingData {
 
 const STEP_ORDER: OnboardingStep[] = ["welcome", "birth-data", "quiz", "result", "profile-setup"];
 
-export function OnboardingFlow({ userId, displayName }: OnboardingFlowProps) {
+export function OnboardingFlow({ userId: _userId, displayName }: OnboardingFlowProps) {
   const router = useRouter();
   const [step, setStep] = useState<OnboardingStep>("welcome");
   const [data, setData] = useState<Partial<OnboardingData>>({});
   const [saving, setSaving] = useState(false);
 
   const currentStepIndex = STEP_ORDER.indexOf(step);
-  const progress = ((currentStepIndex) / (STEP_ORDER.length - 1)) * 100;
+  const progress = (currentStepIndex / (STEP_ORDER.length - 1)) * 100;
 
   function updateData(updates: Partial<OnboardingData>) {
     setData((prev) => ({ ...prev, ...updates }));
@@ -98,9 +98,7 @@ export function OnboardingFlow({ userId, displayName }: OnboardingFlowProps) {
           transition={{ duration: 0.3 }}
           className="flex-1"
         >
-          {step === "welcome" && (
-            <WelcomeStep displayName={displayName} onNext={nextStep} />
-          )}
+          {step === "welcome" && <WelcomeStep displayName={displayName} onNext={nextStep} />}
           {step === "birth-data" && (
             <BirthDataStep
               onNext={(birthData) => {
@@ -118,10 +116,7 @@ export function OnboardingFlow({ userId, displayName }: OnboardingFlowProps) {
             />
           )}
           {step === "result" && data.quizResult && (
-            <ArchetypeResultStep
-              result={data.quizResult}
-              onNext={nextStep}
-            />
+            <ArchetypeResultStep result={data.quizResult} onNext={nextStep} />
           )}
           {step === "profile-setup" && (
             <ProfileSetupStep
@@ -152,9 +147,9 @@ function WelcomeStep({ displayName, onNext }: { displayName: string; onNext: () 
             We&apos;re about to build your Libra profile.
           </p>
           <p className="text-muted-foreground leading-relaxed mb-10 max-w-md mx-auto">
-            This is not a standard sign-up. We&apos;re going to ask for your birth data,
-            profile your Libra psychology across 12 categories, and assign your archetype.
-            It takes about 5 minutes.
+            This is not a standard sign-up. We&apos;re going to ask for your birth data, profile
+            your Libra psychology across 12 categories, and assign your archetype. It takes about 5
+            minutes.
           </p>
           <button
             onClick={onNext}

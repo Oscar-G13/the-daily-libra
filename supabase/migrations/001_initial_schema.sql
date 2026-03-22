@@ -4,8 +4,6 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- Enable extensions
-create extension if not exists "uuid-ossp";
-create extension if not exists "pgcrypto";
 
 -- ─── ENUMS ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +51,7 @@ create table public.users (
 -- ─── BIRTH PROFILES ──────────────────────────────────────────────────────────
 
 create table public.birth_profiles (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null unique,
   birth_date date not null,
   birth_time time,
@@ -70,7 +68,7 @@ create table public.birth_profiles (
 -- ─── ONBOARDING RESPONSES ────────────────────────────────────────────────────
 
 create table public.onboarding_responses (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null,
   question_id text not null,
   answer_value text not null,
@@ -82,7 +80,7 @@ create table public.onboarding_responses (
 -- ─── LIBRA PROFILES ──────────────────────────────────────────────────────────
 
 create table public.libra_profiles (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null unique,
   primary_archetype libra_archetype not null,
   secondary_modifier archetype_modifier,
@@ -101,7 +99,7 @@ create table public.libra_profiles (
 -- ─── DAILY READINGS ──────────────────────────────────────────────────────────
 
 create table public.daily_readings (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null,
   category reading_category not null default 'daily',
   tone reading_tone not null default 'gentle',
@@ -117,7 +115,7 @@ create index idx_daily_readings_user_date on public.daily_readings(user_id, read
 -- ─── COMPATIBILITY REPORTS ───────────────────────────────────────────────────
 
 create table public.compatibility_reports (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null,
   partner_name text not null,
   partner_birth_data_json jsonb not null,
@@ -129,7 +127,7 @@ create table public.compatibility_reports (
 -- ─── JOURNAL ENTRIES ─────────────────────────────────────────────────────────
 
 create table public.journal_entries (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null,
   title text,
   body text not null,
@@ -147,7 +145,7 @@ create index idx_journal_entries_user on public.journal_entries(user_id, entry_d
 -- ─── MOOD LOGS ───────────────────────────────────────────────────────────────
 
 create table public.mood_logs (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null,
   mood_score smallint check (mood_score between 1 and 10),
   confidence_score smallint check (confidence_score between 1 and 10),
@@ -165,7 +163,7 @@ create unique index idx_mood_logs_user_date on public.mood_logs(user_id, log_dat
 -- ─── RITUALS ─────────────────────────────────────────────────────────────────
 
 create table public.rituals (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null,
   ritual_date date not null default current_date,
   ritual_json jsonb not null,
@@ -179,11 +177,10 @@ create unique index idx_rituals_user_date on public.rituals(user_id, ritual_date
 -- ─── AI MEMORY ───────────────────────────────────────────────────────────────
 
 create table public.ai_memory (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null,
   memory_type text not null, -- 'pattern', 'concern', 'preference', 'event'
   content text not null,
-  embedding vector(1536), -- for pgvector similarity search (optional)
   created_at timestamptz not null default now()
 );
 
@@ -192,7 +189,7 @@ create index idx_ai_memory_user on public.ai_memory(user_id, created_at desc);
 -- ─── SUBSCRIPTIONS ───────────────────────────────────────────────────────────
 
 create table public.subscriptions (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references public.users(id) on delete cascade not null unique,
   stripe_customer_id text,
   stripe_subscription_id text,

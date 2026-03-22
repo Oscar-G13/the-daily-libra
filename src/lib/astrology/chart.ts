@@ -11,8 +11,18 @@ import type { NatalChart, PlanetPlacement } from "@/types";
 
 // Zodiac signs in order
 const SIGNS = [
-  "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
-  "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+  "Aries",
+  "Taurus",
+  "Gemini",
+  "Cancer",
+  "Leo",
+  "Virgo",
+  "Libra",
+  "Scorpio",
+  "Sagittarius",
+  "Capricorn",
+  "Aquarius",
+  "Pisces",
 ] as const;
 
 export type ZodiacSign = (typeof SIGNS)[number];
@@ -51,7 +61,7 @@ function calculateSunLongitude(jd: number): number {
     (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mrad) +
     (0.019993 - 0.000101 * T) * Math.sin(2 * Mrad) +
     0.000289 * Math.sin(3 * Mrad);
-  return ((L0 + C) % 360 + 360) % 360;
+  return (((L0 + C) % 360) + 360) % 360;
 }
 
 // Simplified Moon position (approximate)
@@ -82,7 +92,10 @@ function calculateAscendant(jd: number, latitude: number, longitude: number): nu
   const erad = (e * Math.PI) / 180;
   const RAMCrad = (((RAMC % 360) + 360) % 360) * (Math.PI / 180);
   const latRad = (latitude * Math.PI) / 180;
-  const ascRad = Math.atan2(Math.cos(RAMCrad), -(Math.sin(RAMCrad) * Math.cos(erad) + Math.tan(latRad) * Math.sin(erad)));
+  const ascRad = Math.atan2(
+    Math.cos(RAMCrad),
+    -(Math.sin(RAMCrad) * Math.cos(erad) + Math.tan(latRad) * Math.sin(erad))
+  );
   let asc = (ascRad * 180) / Math.PI;
   if (asc < 0) asc += 180;
   if (Math.cos(RAMCrad) < 0) asc += 180;
@@ -93,14 +106,14 @@ function calculateAscendant(jd: number, latitude: number, longitude: number): nu
 function getPlanetaryPositions(jd: number): Record<string, number> {
   const T = (jd - 2451545.0) / 36525.0;
   return {
-    mercury: ((252.251 + 149472.675 * T) % 360 + 360) % 360,
-    venus: ((181.979 + 58517.816 * T) % 360 + 360) % 360,
-    mars: ((355.433 + 19140.299 * T) % 360 + 360) % 360,
-    jupiter: ((34.351 + 3034.906 * T) % 360 + 360) % 360,
-    saturn: ((50.077 + 1222.114 * T) % 360 + 360) % 360,
-    uranus: ((314.055 + 428.048 * T) % 360 + 360) % 360,
-    neptune: ((304.349 + 218.461 * T) % 360 + 360) % 360,
-    pluto: ((238.929 + 145.201 * T) % 360 + 360) % 360,
+    mercury: (((252.251 + 149472.675 * T) % 360) + 360) % 360,
+    venus: (((181.979 + 58517.816 * T) % 360) + 360) % 360,
+    mars: (((355.433 + 19140.299 * T) % 360) + 360) % 360,
+    jupiter: (((34.351 + 3034.906 * T) % 360) + 360) % 360,
+    saturn: (((50.077 + 1222.114 * T) % 360) + 360) % 360,
+    uranus: (((314.055 + 428.048 * T) % 360) + 360) % 360,
+    neptune: (((304.349 + 218.461 * T) % 360) + 360) % 360,
+    pluto: (((238.929 + 145.201 * T) % 360) + 360) % 360,
   };
 }
 
@@ -125,26 +138,22 @@ export function calculateNatalChart(data: BirthData): NatalChart {
 
   const sunLong = calculateSunLongitude(jd);
   const moonLong = calculateMoonLongitude(jd);
-  const ascLong = data.birthTime
-    ? calculateAscendant(jd, data.latitude, data.longitude)
-    : sunLong; // fallback if no birth time
+  const ascLong = data.birthTime ? calculateAscendant(jd, data.latitude, data.longitude) : sunLong; // fallback if no birth time
   const planets = getPlanetaryPositions(jd);
 
-  const sunPlacement = longitudeToSign(sunLong);
-  const moonPlacement = longitudeToSign(moonLong);
   const ascPlacement = longitudeToSign(ascLong);
-  const mcLong = ((ascLong + 270) % 360 + 360) % 360;
+  const mcLong = (((ascLong + 270) % 360) + 360) % 360;
   const mcPlacement = longitudeToSign(mcLong);
 
   // Build house cusps (Placidus simplified — equal house as fallback)
   const houses = Array.from({ length: 12 }, (_, i) => {
-    const cuspLong = ((ascLong + i * 30) % 360 + 360) % 360;
+    const cuspLong = (((ascLong + i * 30) % 360) + 360) % 360;
     const { sign, degree } = longitudeToSign(cuspLong);
     return { house: i + 1, sign, degree };
   });
 
   const getHouseForLongitude = (longitude: number): number => {
-    const relLong = ((longitude - ascLong + 360) % 360);
+    const relLong = (longitude - ascLong + 360) % 360;
     return Math.floor(relLong / 30) + 1;
   };
 

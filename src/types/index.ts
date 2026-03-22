@@ -21,13 +21,7 @@ export type ReadingCategory =
 
 export type ReadingTone = "gentle" | "blunt" | "poetic" | "practical" | "seductive";
 
-export type RelationshipType =
-  | "romantic"
-  | "friendship"
-  | "coworker"
-  | "ex"
-  | "crush"
-  | "family";
+export type RelationshipType = "romantic" | "friendship" | "coworker" | "ex" | "crush" | "family";
 
 export type LibraArchetype =
   | "velvet_diplomat"
