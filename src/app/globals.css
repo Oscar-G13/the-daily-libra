@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 40 20% 92%;
+
+    --card: 240 14% 8%;
+    --card-foreground: 40 20% 92%;
+
+    --popover: 240 14% 8%;
+    --popover-foreground: 40 20% 92%;
+
+    --primary: 42 54% 55%;
+    --primary-foreground: 0 0% 4%;
+
+    --secondary: 270 47% 20%;
+    --secondary-foreground: 40 20% 92%;
+
+    --muted: 240 14% 12%;
+    --muted-foreground: 40 10% 55%;
+
+    --accent: 270 47% 20%;
+    --accent-foreground: 40 20% 92%;
+
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 40 20% 92%;
+
+    --border: 240 14% 14%;
+    --input: 240 14% 12%;
+    --ring: 42 54% 55%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-obsidian text-foreground font-sans;
+    background-image: radial-gradient(ellipse at top, rgba(45, 27, 78, 0.15) 0%, transparent 60%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  /* Glass card */
+  .glass-card {
+    @apply rounded-xl border border-white/[0.06] backdrop-blur-md;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.04) 0%, rgba(45, 27, 78, 0.08) 100%);
+  }
+
+  /* Gold text gradient */
+  .text-gold-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #E2C878 0%, #C9A84C 40%, #B8860B 100%);
+  }
+
+  /* Cosmic divider */
+  .cosmic-divider {
+    @apply relative flex items-center gap-4 my-8;
+  }
+
+  .cosmic-divider::before,
+  .cosmic-divider::after {
+    content: '';
+    @apply flex-1 h-px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.3), transparent);
+  }
+
+  /* Premium card border */
+  .premium-border {
+    @apply relative rounded-xl;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.15), rgba(45, 27, 78, 0.3));
+    padding: 1px;
+  }
+
+  .premium-border-inner {
+    @apply rounded-xl bg-obsidian-50;
+  }
+
+  /* Glow effect */
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.2), 0 0 40px rgba(201, 168, 76, 0.05);
+  }
+
+  /* Reading card */
+  .reading-card {
+    @apply glass-card p-6 md:p-8;
+    border-color: rgba(201, 168, 76, 0.1);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-obsidian;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(201, 168, 76, 0.3);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 168, 76, 0.5);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
