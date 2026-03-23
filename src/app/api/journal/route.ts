@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { awardXP } from "@/lib/gamification/engine";
+import { hasFullAccess } from "@/lib/premium";
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
@@ -39,6 +40,34 @@ export async function POST(req: NextRequest) {
 
   if (!entryBody?.trim()) {
     return NextResponse.json({ error: "Entry body is required" }, { status: 400 });
+  }
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("subscription_tier")
+    .eq("id", user.id)
+    .single();
+
+  if (!hasFullAccess(profile?.subscription_tier)) {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const { count } = await supabase
+      .from("journal_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("entry_date", startOfMonth.toISOString().slice(0, 10));
+
+    if ((count ?? 0) >= 3) {
+      return NextResponse.json(
+        {
+          error:
+            "Free tier includes 3 journal entries per month. Upgrade for unlimited journaling.",
+        },
+        { status: 403 }
+      );
+    }
   }
 
   const { data, error } = await supabase

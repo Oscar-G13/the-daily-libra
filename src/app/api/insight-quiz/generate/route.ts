@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { getCurrentTransits, formatTransitsForPrompt } from "@/lib/astrology/transits";
+import { hasFullAccess } from "@/lib/premium";
 import { ARCHETYPE_LABELS, MODIFIER_LABELS } from "@/types";
 import type { LibraArchetype, ArchetypeModifier } from "@/types";
 
@@ -12,6 +13,19 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: accessProfile } = await supabase
+    .from("users")
+    .select("subscription_tier")
+    .eq("id", user.id)
+    .single();
+
+  if (!hasFullAccess(accessProfile?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Insight Session is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
+  }
 
   // ── Pull every piece of data we have on this person ──────────────────────
   const [
@@ -62,7 +76,9 @@ export async function POST() {
     // Last 14 days of mood data
     supabase
       .from("mood_logs")
-      .select("mood_score, confidence_score, social_energy_score, romantic_energy_score, stress_score, self_worth_score, notes, log_date")
+      .select(
+        "mood_score, confidence_score, social_energy_score, romantic_energy_score, stress_score, self_worth_score, notes, log_date"
+      )
       .eq("user_id", user.id)
       .order("log_date", { ascending: false })
       .limit(14),
@@ -133,9 +149,7 @@ export async function POST() {
     .filter(Boolean)
     .slice(0, 8);
 
-  const pastQuestionsRaw = pastQuiz?.[0]?.questions_json as
-    | { question: string }[]
-    | null;
+  const pastQuestionsRaw = pastQuiz?.[0]?.questions_json as { question: string }[] | null;
   const pastQuestions = (pastQuestionsRaw ?? []).map((q) => q.question);
 
   // ── Build the full profile context for GPT ───────────────────────────────
@@ -225,7 +239,10 @@ Return ONLY valid JSON — no markdown, no explanation, no code blocks. Exactly 
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Here is the complete profile:\n\n${profileContext}\n\nGenerate 5 personalized insight questions.` },
+        {
+          role: "user",
+          content: `Here is the complete profile:\n\n${profileContext}\n\nGenerate 5 personalized insight questions.`,
+        },
       ],
       max_tokens: 1200,
       temperature: 0.9,

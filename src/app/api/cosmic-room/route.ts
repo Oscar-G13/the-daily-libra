@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { getCurrentTransits, formatTransitsForPrompt } from "@/lib/astrology/transits";
+import { hasFullAccess } from "@/lib/premium";
 
 // GET — fetch saved cosmic room items + daily affirmation
 export async function GET(req: NextRequest) {
@@ -11,6 +12,19 @@ export async function GET(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("subscription_tier")
+    .eq("id", user.id)
+    .single();
+
+  if (!hasFullAccess(profile?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Cosmic Room is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
+  }
 
   const { searchParams } = new URL(req.url);
   const generateAffirmation = searchParams.get("affirmation") === "true";
@@ -89,8 +103,24 @@ export async function POST(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { data: profile } = await supabase
+    .from("users")
+    .select("subscription_tier")
+    .eq("id", user.id)
+    .single();
+
+  if (!hasFullAccess(profile?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Cosmic Room is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
+  }
+
   const body = await req.json();
-  const { type, content }: { type: "quote" | "reading" | "affirmation" | "insight"; content: string } = body;
+  const {
+    type,
+    content,
+  }: { type: "quote" | "reading" | "affirmation" | "insight"; content: string } = body;
 
   if (!content?.trim() || !type) {
     return NextResponse.json({ error: "Missing content or type." }, { status: 400 });
@@ -121,6 +151,19 @@ export async function DELETE(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("subscription_tier")
+    .eq("id", user.id)
+    .single();
+
+  if (!hasFullAccess(profile?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Cosmic Room is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
+  }
 
   const { id } = await req.json();
 

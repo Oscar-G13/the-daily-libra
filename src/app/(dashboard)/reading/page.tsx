@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { hasFullAccess } from "@/lib/premium";
 import { ReadingHub } from "@/components/reading/reading-hub";
 
 export const metadata = { title: "Readings" };
@@ -25,7 +26,7 @@ export default async function ReadingPage() {
       </div>
 
       <ReadingHub
-        isPremium={userData?.subscription_tier === "premium"}
+        isPremium={hasFullAccess(userData?.subscription_tier)}
         defaultTone={userData?.tone_preference ?? "gentle"}
       />
     </div>

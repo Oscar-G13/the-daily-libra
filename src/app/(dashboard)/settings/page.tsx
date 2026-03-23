@@ -3,17 +3,31 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { BillingOverview } from "@/components/subscription/billing-overview";
+import { hasFullAccess } from "@/lib/premium";
+import type { BillingSummary } from "@/lib/billing/summary";
 import { TONE_LABELS } from "@/types";
 import type { ReadingTone } from "@/types";
 
 const TONES: ReadingTone[] = ["gentle", "blunt", "poetic", "practical", "seductive"];
 const GOAL_OPTIONS = [
-  "love", "career", "confidence", "healing",
-  "decision making", "boundaries", "friendships", "creativity",
+  "love",
+  "career",
+  "confidence",
+  "healing",
+  "decision making",
+  "boundaries",
+  "friendships",
+  "creativity",
 ];
 const RELATIONSHIP_OPTIONS = [
-  "single", "dating", "in a relationship", "it's complicated",
-  "married", "separated", "prefer not to say",
+  "single",
+  "dating",
+  "in a relationship",
+  "it's complicated",
+  "married",
+  "separated",
+  "prefer not to say",
 ];
 
 function AvatarUpload({
@@ -94,13 +108,17 @@ function AvatarUpload({
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const file = new File([blob], "camera-photo.jpg", { type: "image/jpeg" });
-        upload(file);
-        closeCamera();
-      }
-    }, "image/jpeg", 0.9);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          const file = new File([blob], "camera-photo.jpg", { type: "image/jpeg" });
+          upload(file);
+          closeCamera();
+        }
+      },
+      "image/jpeg",
+      0.9
+    );
   }
 
   return (
@@ -186,10 +204,17 @@ interface LeaderboardEntry {
   referral_count: number;
 }
 
-function InviteSection({ referralCode, referralCount }: { referralCode: string; referralCount: number }) {
+function InviteSection({
+  referralCode,
+  referralCount,
+}: {
+  referralCode: string;
+  referralCount: number;
+}) {
   const [copied, setCopied] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://thedailylibra.com";
+  const baseUrl =
+    typeof window !== "undefined" ? window.location.origin : "https://thedailylibra.com";
   const inviteUrl = `${baseUrl}/join/${referralCode}`;
 
   useEffect(() => {
@@ -214,7 +239,9 @@ function InviteSection({ referralCode, referralCount }: { referralCode: string; 
           url: inviteUrl,
         });
         return;
-      } catch { /* fallback */ }
+      } catch {
+        /* fallback */
+      }
     }
     copyLink();
   }
@@ -261,9 +288,15 @@ function InviteSection({ referralCode, referralCount }: { referralCode: string; 
               <span className="text-xs text-muted-foreground/30 w-4">{i + 1}</span>
               {entry.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={entry.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover border border-white/[0.08]" />
+                <img
+                  src={entry.avatar_url}
+                  alt=""
+                  className="w-6 h-6 rounded-full object-cover border border-white/[0.08]"
+                />
               ) : (
-                <div className="w-6 h-6 rounded-full bg-gold/[0.08] border border-gold/15 flex items-center justify-center text-[10px]">♎</div>
+                <div className="w-6 h-6 rounded-full bg-gold/[0.08] border border-gold/15 flex items-center justify-center text-[10px]">
+                  ♎
+                </div>
               )}
               <p className="text-xs text-foreground/70 flex-1 truncate">
                 {entry.display_name ?? "Anonymous Libra"}
@@ -326,12 +359,15 @@ function PushNotificationSection() {
 
   return (
     <div className="glass-card p-6 space-y-4">
-      <p className="text-xs text-muted-foreground uppercase tracking-widest">Cosmic Notifications</p>
+      <p className="text-xs text-muted-foreground uppercase tracking-widest">
+        Cosmic Notifications
+      </p>
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <p className="text-sm text-foreground/80">Astrological event alerts</p>
           <p className="text-xs text-muted-foreground/50 leading-relaxed">
-            Moon phase updates, retrograde warnings, and daily reading reminders — based on your chart.
+            Moon phase updates, retrograde warnings, and daily reading reminders — based on your
+            chart.
           </p>
         </div>
         {status === "subscribed" ? (
@@ -371,45 +407,64 @@ export default function SettingsPage() {
   const [referralCode, setReferralCode] = useState("");
   const [referralCount, setReferralCount] = useState(0);
   const [tier, setTier] = useState("free");
+  const [billingSummary, setBillingSummary] = useState<BillingSummary | null>(null);
+  const [billingError, setBillingError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data } = await supabase
       .from("users")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .select("display_name, pronouns, tone_preference, relationship_status, goals, subscription_tier, avatar_url, profile_bio, profile_public, referral_code, referral_count" as any)
+      .select(
+        "display_name, pronouns, tone_preference, relationship_status, goals, subscription_tier, avatar_url, profile_bio, profile_public, referral_code, referral_count"
+      )
       .eq("id", user.id)
       .single();
 
     if (data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const d = data as any;
-      setDisplayName(d.display_name ?? "");
-      setPronouns(d.pronouns ?? "");
-      setBio(d.profile_bio ?? "");
-      setTone((d.tone_preference as ReadingTone) ?? "gentle");
-      setRelationshipStatus(d.relationship_status ?? "");
-      setGoals(d.goals ?? []);
-      setTier(d.subscription_tier ?? "free");
-      setAvatarUrl(d.avatar_url ?? null);
-      setProfilePublic(d.profile_public ?? false);
-      setReferralCode(d.referral_code ?? "");
-      setReferralCount(d.referral_count ?? 0);
+      setDisplayName(data.display_name ?? "");
+      setPronouns(data.pronouns ?? "");
+      setBio(data.profile_bio ?? "");
+      setTone((data.tone_preference as ReadingTone) ?? "gentle");
+      setRelationshipStatus(data.relationship_status ?? "");
+      setGoals(data.goals ?? []);
+      setTier(data.subscription_tier ?? "free");
+      setAvatarUrl(data.avatar_url ?? null);
+      setProfilePublic(data.profile_public ?? false);
+      setReferralCode(data.referral_code ?? "");
+      setReferralCount(data.referral_count ?? 0);
     }
+
+    try {
+      const response = await fetch("/api/billing/summary");
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to load billing.");
+      }
+
+      setBillingSummary(payload.summary ?? null);
+      setBillingError(null);
+    } catch (error) {
+      setBillingSummary(null);
+      setBillingError(error instanceof Error ? error.message : "Failed to load billing.");
+    }
+
     setLoading(false);
   }, [supabase]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   function toggleGoal(goal: string) {
-    setGoals((prev) =>
-      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
-    );
+    setGoals((prev) => (prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]));
   }
 
   async function handleSave() {
@@ -449,6 +504,17 @@ export default function SettingsPage() {
         <h1 className="font-serif text-display-xs text-foreground mb-1">Settings</h1>
         <p className="text-sm text-muted-foreground">Customize your profile and preferences.</p>
       </motion.div>
+
+      {billingSummary ? (
+        <BillingOverview summary={billingSummary} />
+      ) : (
+        <div className="glass-card p-6 space-y-3">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Billing</p>
+          <p className="text-sm text-muted-foreground">
+            {billingError ?? "Loading your billing summary..."}
+          </p>
+        </div>
+      )}
 
       {/* Avatar */}
       <div className="glass-card p-6">
@@ -511,7 +577,9 @@ export default function SettingsPage() {
 
       {/* Goals */}
       <div className="glass-card p-6 space-y-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest">What I&apos;m Working On</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest">
+          What I&apos;m Working On
+        </p>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((goal) => (
             <button
@@ -532,8 +600,10 @@ export default function SettingsPage() {
       {/* Reading Tone */}
       <div className="glass-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest">Default Reading Tone</p>
-          {tier !== "premium" && (
+          <p className="text-xs text-muted-foreground uppercase tracking-widest">
+            Default Reading Tone
+          </p>
+          {!hasFullAccess(tier) && (
             <span className="text-xs text-gold/50 bg-gold/[0.06] border border-gold/15 px-2 py-0.5 rounded-full">
               Premium unlocks all tones
             </span>
@@ -541,7 +611,7 @@ export default function SettingsPage() {
         </div>
         <div className="grid grid-cols-1 gap-2">
           {TONES.map((t) => {
-            const locked = tier !== "premium" && t !== "gentle";
+            const locked = !hasFullAccess(tier) && t !== "gentle";
             return (
               <button
                 key={t}
@@ -550,8 +620,8 @@ export default function SettingsPage() {
                   tone === t && !locked
                     ? "border-gold/40 bg-gold/5 text-foreground"
                     : locked
-                    ? "border-white/[0.04] text-muted-foreground/30 cursor-not-allowed"
-                    : "border-white/[0.06] text-muted-foreground hover:border-white/10"
+                      ? "border-white/[0.04] text-muted-foreground/30 cursor-not-allowed"
+                      : "border-white/[0.06] text-muted-foreground hover:border-white/10"
                 }`}
               >
                 {TONE_LABELS[t]}
@@ -597,9 +667,7 @@ export default function SettingsPage() {
       </button>
 
       {/* Invite link */}
-      {referralCode && (
-        <InviteSection referralCode={referralCode} referralCount={referralCount} />
-      )}
+      {referralCode && <InviteSection referralCode={referralCode} referralCount={referralCount} />}
 
       {/* Push notifications */}
       <PushNotificationSection />

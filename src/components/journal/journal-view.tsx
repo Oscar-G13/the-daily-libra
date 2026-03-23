@@ -46,7 +46,11 @@ export function JournalView({ initialEntries, isPremium }: JournalViewProps) {
   const [saving, setSaving] = useState(false);
   const { handleGamificationResult } = useGamification();
 
-  const freeLimitReached = !isPremium && entries.length >= 3;
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const freeEntriesThisMonth = entries.filter((entry) =>
+    entry.entry_date.startsWith(currentMonth)
+  ).length;
+  const freeLimitReached = !isPremium && freeEntriesThisMonth >= 3;
 
   async function saveEntry() {
     if (!body.trim() || saving) return;

@@ -22,11 +22,33 @@ function HeartScalesIcon() {
       <line x1="16" y1="3" x2="16" y2="22" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
       <line x1="4" y1="9" x2="28" y2="9" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
       <line x1="7" y1="9" x2="7" y2="16" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-      <ellipse cx="7" cy="18" rx="4" ry="1.5" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.8" />
+      <ellipse
+        cx="7"
+        cy="18"
+        rx="4"
+        ry="1.5"
+        fill="currentColor"
+        opacity="0.15"
+        stroke="currentColor"
+        strokeWidth="0.8"
+      />
       <line x1="25" y1="9" x2="25" y2="16" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-      <ellipse cx="25" cy="18" rx="4" ry="1.5" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.8" />
+      <ellipse
+        cx="25"
+        cy="18"
+        rx="4"
+        ry="1.5"
+        fill="currentColor"
+        opacity="0.15"
+        stroke="currentColor"
+        strokeWidth="0.8"
+      />
       <circle cx="16" cy="3" r="1.5" fill="currentColor" opacity="0.5" />
-      <path d="M14 5.5 C14 4.1 15 3.5 16 4.5 C17 3.5 18 4.1 18 5.5 C18 6.9 16 8 16 8 C16 8 14 6.9 14 5.5Z" fill="currentColor" opacity="0.3" />
+      <path
+        d="M14 5.5 C14 4.1 15 3.5 16 4.5 C17 3.5 18 4.1 18 5.5 C18 6.9 16 8 16 8 C16 8 14 6.9 14 5.5Z"
+        fill="currentColor"
+        opacity="0.3"
+      />
     </svg>
   );
 }
@@ -60,7 +82,9 @@ function ReadingDisplay({ text }: { text: string }) {
             className="space-y-2"
           >
             <div className="flex items-center gap-2">
-              <p className="text-xs font-semibold text-gold/80 uppercase tracking-widest">{header}</p>
+              <p className="text-xs font-semibold text-gold/80 uppercase tracking-widest">
+                {header}
+              </p>
               {isScore && (
                 <span className="text-xs text-gold/50 font-mono">
                   {body.match(/(\d+)\/10/)?.[0]}
@@ -84,7 +108,7 @@ interface PastReport {
   created_at: string;
 }
 
-export function CompatibilityLab() {
+export function CompatibilityLab({ isPremium }: { isPremium: boolean }) {
   const [step, setStep] = useState<"form" | "loading" | "result" | "history">("form");
   const [partnerName, setPartnerName] = useState("");
   const [partnerBirthDate, setPartnerBirthDate] = useState("");
@@ -197,6 +221,11 @@ export function CompatibilityLab() {
               <h1 className="font-serif text-display-sm text-foreground">Compatibility Lab</h1>
               <p className="text-sm text-muted-foreground">
                 Chart-based relationship readings — for every dynamic in your orbit
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                {isPremium
+                  ? "Unlimited compatibility readings are active on your paid plan."
+                  : "Free tier includes 1 compatibility reading every 7 days."}
               </p>
             </div>
           </div>
@@ -350,7 +379,9 @@ export function CompatibilityLab() {
           >
             {/* Partner recap */}
             <div className="glass-card p-4 border-gold/10">
-              <p className="text-xs text-gold/50 uppercase tracking-widest mb-1">Compatibility reading</p>
+              <p className="text-xs text-gold/50 uppercase tracking-widest mb-1">
+                Compatibility reading
+              </p>
               <p className="text-sm text-foreground/80">
                 {partnerName} · {selectedType?.icon} {selectedType?.label}
               </p>
@@ -421,10 +452,16 @@ export function CompatibilityLab() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-gold/50 uppercase tracking-widest mb-0.5">
-                        {RELATIONSHIP_TYPES.find((r) => r.value === selectedReport.relationship_type)?.icon}{" "}
+                        {
+                          RELATIONSHIP_TYPES.find(
+                            (r) => r.value === selectedReport.relationship_type
+                          )?.icon
+                        }{" "}
                         {selectedReport.relationship_type}
                       </p>
-                      <p className="text-sm text-foreground font-medium">{selectedReport.partner_name}</p>
+                      <p className="text-sm text-foreground font-medium">
+                        {selectedReport.partner_name}
+                      </p>
                     </div>
                     <button
                       onClick={() => setSelectedReport(null)}
@@ -461,7 +498,8 @@ export function CompatibilityLab() {
                               {report.partner_name}
                             </p>
                             <p className="text-xs text-muted-foreground/60">
-                              {type?.label} · {report.partner_birth_data_json?.chart?.sun ?? "Unknown"} Sun
+                              {type?.label} ·{" "}
+                              {report.partner_birth_data_json?.chart?.sun ?? "Unknown"} Sun
                             </p>
                           </div>
                         </div>

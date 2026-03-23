@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
+import { hasFullAccess } from "@/lib/premium";
 import { ARCHETYPE_LABELS, MODIFIER_LABELS } from "@/types";
 import type { LibraArchetype, ArchetypeModifier } from "@/types";
 
@@ -25,6 +26,19 @@ export async function POST(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { data: accessProfile } = await supabase
+    .from("users")
+    .select("subscription_tier")
+    .eq("id", user.id)
+    .single();
+
+  if (!hasFullAccess(accessProfile?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Insight Session is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
+  }
+
   const body = await req.json();
   const { sessionId, answers }: { sessionId: string; answers: Answer[] } = body;
 
@@ -33,39 +47,42 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Fetch session + user profile ─────────────────────────────────────────
-  const [{ data: session }, { data: libraProfile }, { data: userData }, { data: birthProfile }, { data: traits }] =
-    await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any)
-        .from("quiz_sessions")
-        .select("questions_json")
-        .eq("id", sessionId)
-        .eq("user_id", user.id)
-        .single(),
+  const [
+    { data: session },
+    { data: libraProfile },
+    { data: userData },
+    { data: birthProfile },
+    { data: traits },
+  ] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("quiz_sessions")
+      .select("questions_json")
+      .eq("id", sessionId)
+      .eq("user_id", user.id)
+      .single(),
 
-      supabase
-        .from("libra_profiles")
-        .select("primary_archetype, secondary_modifier, relationship_style, conflict_style, decision_style, emotional_pattern_summary, ai_memory_summary")
-        .eq("user_id", user.id)
-        .single(),
+    supabase
+      .from("libra_profiles")
+      .select(
+        "primary_archetype, secondary_modifier, relationship_style, conflict_style, decision_style, emotional_pattern_summary, ai_memory_summary"
+      )
+      .eq("user_id", user.id)
+      .single(),
 
-      supabase
-        .from("users")
-        .select("display_name, relationship_status, goals")
-        .eq("id", user.id)
-        .single(),
+    supabase
+      .from("users")
+      .select("display_name, relationship_status, goals")
+      .eq("id", user.id)
+      .single(),
 
-      supabase
-        .from("birth_profiles")
-        .select("natal_chart_json")
-        .eq("user_id", user.id)
-        .single(),
+    supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
 
-      supabase
-        .from("user_profile_traits")
-        .select("trait_key, percentile_band, normalized_score")
-        .eq("user_id", user.id),
-    ]);
+    supabase
+      .from("user_profile_traits")
+      .select("trait_key, percentile_band, normalized_score")
+      .eq("user_id", user.id),
+  ]);
 
   if (!session) {
     return NextResponse.json({ error: "Session not found." }, { status: 404 });
@@ -75,8 +92,12 @@ export async function POST(req: NextRequest) {
   const chart = birthProfile?.natal_chart_json as Record<string, { sign: string }> | null;
   const archetype = libraProfile?.primary_archetype as LibraArchetype | null;
   const modifier = libraProfile?.secondary_modifier as ArchetypeModifier | null;
-  const highTraits = (traits ?? []).filter((t) => t.percentile_band === "high").map((t) => t.trait_key);
-  const lowTraits = (traits ?? []).filter((t) => t.percentile_band === "low").map((t) => t.trait_key);
+  const highTraits = (traits ?? [])
+    .filter((t) => t.percentile_band === "high")
+    .map((t) => t.trait_key);
+  const lowTraits = (traits ?? [])
+    .filter((t) => t.percentile_band === "low")
+    .map((t) => t.trait_key);
 
   const qaBlock = answers
     .map((a) => {

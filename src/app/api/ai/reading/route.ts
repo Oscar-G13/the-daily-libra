@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { buildReadingSystemPrompt, buildReadingUserPrompt } from "@/lib/openai/prompts/reading";
 import { getCurrentTransits, formatTransitsForPrompt } from "@/lib/astrology/transits";
+import { hasFullAccess } from "@/lib/premium";
 import type { ReadingCategory, ReadingTone, LibraArchetype, ArchetypeModifier } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -23,7 +24,11 @@ export async function POST(req: NextRequest) {
   // Fetch user data
   const [{ data: userData }, { data: birthProfile }, { data: libraProfile }, { data: aiMemory }] =
     await Promise.all([
-      supabase.from("users").select("display_name, tone_preference").eq("id", user.id).single(),
+      supabase
+        .from("users")
+        .select("display_name, tone_preference, subscription_tier")
+        .eq("id", user.id)
+        .single(),
       supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
       supabase
         .from("libra_profiles")
@@ -42,13 +47,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check free tier limits
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("status, plan_name")
-    .eq("user_id", user.id)
-    .single();
-
-  const isPremium = subscription?.status === "active";
+  const isPremium = hasFullAccess(userData.subscription_tier);
 
   if (!isPremium && category !== "daily") {
     // Count today's readings

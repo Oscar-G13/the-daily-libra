@@ -2,7 +2,12 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { PREMIUM_FEATURE_LABELS, PREMIUM_FEATURE_DESCRIPTIONS, type PremiumFeature } from "@/lib/premium";
+import { BILLING_PLANS } from "@/lib/billing/catalog";
+import {
+  PREMIUM_FEATURE_LABELS,
+  PREMIUM_FEATURE_DESCRIPTIONS,
+  type PremiumFeature,
+} from "@/lib/premium";
 
 interface PremiumGateProps {
   feature: PremiumFeature;
@@ -28,9 +33,7 @@ export function PremiumGate({ feature, children, isPremium }: PremiumGateProps) 
       >
         <div className="text-center space-y-3 max-w-xs">
           <p className="text-2xl">💎</p>
-          <h3 className="font-serif text-lg text-foreground">
-            {PREMIUM_FEATURE_LABELS[feature]}
-          </h3>
+          <h3 className="font-serif text-lg text-foreground">{PREMIUM_FEATURE_LABELS[feature]}</h3>
           <p className="text-xs text-muted-foreground/70 leading-relaxed">
             {PREMIUM_FEATURE_DESCRIPTIONS[feature]}
           </p>
@@ -38,9 +41,12 @@ export function PremiumGate({ feature, children, isPremium }: PremiumGateProps) 
             href="/subscription"
             className="inline-flex items-center gap-1.5 mt-2 px-5 py-2.5 rounded-xl bg-gold/10 border border-gold/25 text-gold text-sm font-medium hover:bg-gold/15 transition-all"
           >
-            Unlock Premium ✦
+            Start 3-Day Trial ✦
           </Link>
-          <p className="text-xs text-muted-foreground/40">$5/mo · cancel anytime</p>
+          <p className="text-xs text-muted-foreground/40">
+            Premium from {BILLING_PLANS.premium_monthly.displayPrice}
+            {BILLING_PLANS.premium_monthly.renewalLabel}
+          </p>
         </div>
       </motion.div>
     </div>
@@ -100,9 +106,14 @@ export function PremiumPageGate({ feature }: { feature: PremiumFeature }) {
         href="/subscription"
         className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gold/10 border border-gold/25 text-gold text-sm font-medium hover:bg-gold/15 transition-all"
       >
-        Unlock Premium — $5/mo ✦
+        Start 3-Day Trial ✦
       </Link>
-      <p className="text-xs text-muted-foreground/40">Annual plan available · cancel anytime</p>
+      <p className="text-xs text-muted-foreground/40">
+        Premium Monthly {BILLING_PLANS.premium_monthly.displayPrice}
+        {BILLING_PLANS.premium_monthly.renewalLabel} · Premium Yearly{" "}
+        {BILLING_PLANS.premium_annual.displayPrice}
+        {BILLING_PLANS.premium_annual.renewalLabel}
+      </p>
     </div>
   );
 }

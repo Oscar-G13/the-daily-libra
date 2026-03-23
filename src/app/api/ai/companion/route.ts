@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { buildCompanionSystemPrompt } from "@/lib/openai/prompts/companion";
+import { hasFullAccess } from "@/lib/premium";
 import type { LibraArchetype, ArchetypeModifier } from "@/types";
 
 interface Message {
@@ -26,14 +27,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No messages provided" }, { status: 400 });
   }
 
-  // Check free tier message limit
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", user.id)
-    .single();
+  const [{ data: userData }, { data: birthProfile }, { data: libraProfile }, { data: aiMemory }] =
+    await Promise.all([
+      supabase.from("users").select("display_name, subscription_tier").eq("id", user.id).single(),
+      supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
+      supabase
+        .from("libra_profiles")
+        .select("primary_archetype, secondary_modifier, ai_memory_summary")
+        .eq("user_id", user.id)
+        .single(),
+      supabase
+        .from("ai_personalization_memory")
+        .select("system_prompt_fragment")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
-  const isPremium = subscription?.status === "active";
+  const isPremium = hasFullAccess(userData?.subscription_tier);
 
   if (!isPremium) {
     // Simple daily message count check — in production use a more robust counter
@@ -52,23 +62,6 @@ export async function POST(req: NextRequest) {
       );
     }
   }
-
-  // Fetch profile
-  const [{ data: userData }, { data: birthProfile }, { data: libraProfile }, { data: aiMemory }] =
-    await Promise.all([
-      supabase.from("users").select("display_name").eq("id", user.id).single(),
-      supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
-      supabase
-        .from("libra_profiles")
-        .select("primary_archetype, secondary_modifier, ai_memory_summary")
-        .eq("user_id", user.id)
-        .single(),
-      supabase
-        .from("ai_personalization_memory")
-        .select("system_prompt_fragment")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-    ]);
 
   const chart = birthProfile?.natal_chart_json as Record<string, { sign: string }> | null;
 

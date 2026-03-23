@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { getCurrentTransits, formatTransitsForPrompt } from "@/lib/astrology/transits";
+import { hasFullAccess } from "@/lib/premium";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -15,21 +16,31 @@ export async function POST(req: NextRequest) {
   const { situation, personName }: { situation: string; personName?: string } = body;
 
   if (!situation?.trim() || situation.length < 20) {
-    return NextResponse.json(
-      { error: "Describe the situation in more detail." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Describe the situation in more detail." }, { status: 400 });
   }
 
   const [{ data: userData }, { data: birthProfile }, { data: libraProfile }] = await Promise.all([
-    supabase.from("users").select("display_name, tone_preference").eq("id", user.id).single(),
+    supabase
+      .from("users")
+      .select("display_name, tone_preference, subscription_tier")
+      .eq("id", user.id)
+      .single(),
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
     supabase
       .from("libra_profiles")
-      .select("primary_archetype, secondary_modifier, relationship_style, conflict_style, ai_memory_summary")
+      .select(
+        "primary_archetype, secondary_modifier, relationship_style, conflict_style, ai_memory_summary"
+      )
       .eq("user_id", user.id)
       .single(),
   ]);
+
+  if (!hasFullAccess(userData?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Red Flag Decoder is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
+  }
 
   const chart = birthProfile?.natal_chart_json as Record<string, { sign: string }> | null;
   const transits = getCurrentTransits();
@@ -107,7 +118,9 @@ Be honest. Be warm. Do not catastrophize. Do not minimize. Maximum 430 words.`;
           mood_tag: "clear",
         });
       } catch {
-        controller.enqueue(new TextEncoder().encode("\n\n[Something went wrong. Please try again.]"));
+        controller.enqueue(
+          new TextEncoder().encode("\n\n[Something went wrong. Please try again.]")
+        );
       } finally {
         controller.close();
       }

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { hasFullAccess } from "@/lib/premium";
 import { JournalView } from "@/components/journal/journal-view";
 
 export const metadata = { title: "Journal" };
@@ -33,7 +34,7 @@ export default async function JournalPage() {
 
       <JournalView
         initialEntries={entries ?? []}
-        isPremium={userData?.subscription_tier === "premium"}
+        isPremium={hasFullAccess(userData?.subscription_tier)}
       />
     </div>
   );

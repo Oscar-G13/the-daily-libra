@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { calculateNatalChart } from "@/lib/astrology/chart";
 import { getCurrentTransits, formatTransitsForPrompt } from "@/lib/astrology/transits";
+import { hasFullAccess } from "@/lib/premium";
 
 const RELATIONSHIP_LABELS: Record<string, string> = {
   romantic: "romantic partner",
@@ -44,7 +45,11 @@ export async function POST(req: NextRequest) {
   }
 
   const [{ data: userData }, { data: birthProfile }, { data: libraProfile }] = await Promise.all([
-    supabase.from("users").select("display_name, tone_preference").eq("id", user.id).single(),
+    supabase
+      .from("users")
+      .select("display_name, tone_preference, subscription_tier")
+      .eq("id", user.id)
+      .single(),
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
     supabase
       .from("libra_profiles")
@@ -52,6 +57,27 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .single(),
   ]);
+
+  if (!hasFullAccess(userData?.subscription_tier)) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const { count } = await supabase
+      .from("compatibility_reports")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", sevenDaysAgo.toISOString());
+
+    if ((count ?? 0) >= 1) {
+      return NextResponse.json(
+        {
+          error:
+            "Free tier includes 1 compatibility reading every 7 days. Upgrade for unlimited access.",
+        },
+        { status: 403 }
+      );
+    }
+  }
 
   // Calculate partner's chart from birth date (Sun + Moon minimum)
   const partnerChart = calculateNatalChart({
@@ -161,7 +187,13 @@ Be specific, not generic. Reference actual signs and planetary placements. Write
               mars: partnerChart.mars.sign,
             },
           },
-          relationship_type: relationshipType as "romantic" | "friendship" | "coworker" | "ex" | "crush" | "family",
+          relationship_type: relationshipType as
+            | "romantic"
+            | "friendship"
+            | "coworker"
+            | "ex"
+            | "crush"
+            | "family",
           report_json: { text: fullText },
         });
       } catch {

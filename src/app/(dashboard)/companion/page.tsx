@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { hasFullAccess } from "@/lib/premium";
 import { CompanionChat } from "@/components/companion/chat-interface";
 
 export const metadata = { title: "AI Companion" };
@@ -25,7 +26,7 @@ export default async function CompanionPage() {
       </div>
       <CompanionChat
         displayName={userData?.display_name ?? ""}
-        isPremium={userData?.subscription_tier === "premium"}
+        isPremium={hasFullAccess(userData?.subscription_tier)}
       />
     </div>
   );

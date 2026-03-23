@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { hasFullAccess } from "@/lib/premium";
 import type { AestheticStyle } from "@/types";
 
 const VALID_STYLES: AestheticStyle[] = [
@@ -26,6 +27,19 @@ export async function POST(req: NextRequest) {
 
   if (!VALID_STYLES.includes(style)) {
     return NextResponse.json({ error: "Invalid aesthetic style." }, { status: 400 });
+  }
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("subscription_tier")
+    .eq("id", user.id)
+    .single();
+
+  if (!hasFullAccess(profile?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Aesthetic Profile is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
   }
 
   const { error } = await supabase

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
+import { hasFullAccess } from "@/lib/premium";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -11,18 +12,19 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const {
-    message,
-    senderName,
-    context,
-  }: { message: string; senderName: string; context: string } = body;
+  const { message, senderName, context }: { message: string; senderName: string; context: string } =
+    body;
 
   if (!message?.trim() || message.length < 5) {
     return NextResponse.json({ error: "Paste the actual message." }, { status: 400 });
   }
 
   const [{ data: userData }, { data: birthProfile }, { data: libraProfile }] = await Promise.all([
-    supabase.from("users").select("display_name, tone_preference").eq("id", user.id).single(),
+    supabase
+      .from("users")
+      .select("display_name, tone_preference, subscription_tier")
+      .eq("id", user.id)
+      .single(),
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
     supabase
       .from("libra_profiles")
@@ -30,6 +32,13 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .single(),
   ]);
+
+  if (!hasFullAccess(userData?.subscription_tier)) {
+    return NextResponse.json(
+      { error: "Text Decoder is part of Premium. Upgrade to continue." },
+      { status: 403 }
+    );
+  }
 
   const chart = birthProfile?.natal_chart_json as Record<string, { sign: string }> | null;
 
@@ -102,7 +111,9 @@ Be conversational but sharp. Maximum 380 words. Do not catastrophize. Do not min
           mood_tag: "clear",
         });
       } catch {
-        controller.enqueue(new TextEncoder().encode("\n\n[Something went wrong. Please try again.]"));
+        controller.enqueue(
+          new TextEncoder().encode("\n\n[Something went wrong. Please try again.]")
+        );
       } finally {
         controller.close();
       }

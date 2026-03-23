@@ -1,3 +1,5 @@
+import type { SubscriptionTier } from "@/lib/billing/catalog";
+
 // ─── Premium feature definitions ─────────────────────────────────────────────
 
 export type PremiumFeature =
@@ -32,25 +34,27 @@ export const PREMIUM_FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   red_flag_decoder: "Get a clear-eyed pattern analysis of any relationship dynamic.",
   insight_quiz: "Your personalized AI psychological portrait. Questions written just for you.",
   cosmic_room_save: "Your private sanctuary — save readings, quotes, and daily affirmations.",
-  compatibility_unlimited: "Unlimited chart-based relationship readings for everyone in your orbit.",
+  compatibility_unlimited:
+    "Unlimited chart-based relationship readings for everyone in your orbit.",
   reading_categories: "Unlock love, career, shadow, healing, confidence, and all 11 reading types.",
   reading_tones: "Choose your reading voice — poetic, blunt, seductive, practical, or gentle.",
   journal_unlimited: "Unlimited journal entries with AI-generated prompts and mood tracking.",
   companion_unlimited: "Unlimited sessions with your Libra-tuned AI reflection companion.",
   aesthetic_profile: "Discover your Libra aesthetic identity across 6 visual archetypes.",
-  decision_decoder: "Navigate your most difficult decisions through your chart and current transits.",
+  decision_decoder:
+    "Navigate your most difficult decisions through your chart and current transits.",
 };
 
-export function isPremium(tier: string | null | undefined): boolean {
+export function isPremium(tier: SubscriptionTier | string | null | undefined): boolean {
   return tier === "premium";
 }
 
-export function isHighPriestess(tier: string | null | undefined): boolean {
+export function isHighPriestess(tier: SubscriptionTier | string | null | undefined): boolean {
   return tier === "high_priestess";
 }
 
 /** High Priestess users get all premium features too */
-export function hasFullAccess(tier: string | null | undefined): boolean {
+export function hasFullAccess(tier: SubscriptionTier | string | null | undefined): boolean {
   return isPremium(tier) || isHighPriestess(tier);
 }
 

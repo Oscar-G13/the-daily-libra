@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { buildBillingSummary } from "@/lib/billing/summary";
+import type { SubscriptionTier } from "@/lib/billing/catalog";
 import { SubscriptionClient } from "@/components/subscription/subscription-client";
 
 export const metadata = { title: "Subscription" };
@@ -9,29 +11,25 @@ export default async function SubscriptionPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: subscription }, profileResult] = await Promise.all([
+  const [{ data: subscriptions }, profileResult] = await Promise.all([
     supabase
       .from("subscriptions")
-      .select("status, plan_name, current_period_end, stripe_customer_id")
-      .eq("user_id", user!.id)
-      .maybeSingle(),
-    (supabase as any)
+      .select(
+        "id, access_started_at, cancel_at_period_end, current_period_end, current_period_start, plan_key, plan_name, status, stripe_customer_id, stripe_subscription_id"
+      )
+      .eq("user_id", user!.id),
+    supabase
       .from("users")
-      .select("subscription_tier")
+      .select("subscription_tier, pro_member_since")
       .eq("id", user!.id)
       .single(),
   ]);
 
-  const isActive = subscription?.status === "active";
-  const tier = profileResult.data?.subscription_tier ?? "free";
+  const summary = buildBillingSummary({
+    subscriptions: subscriptions ?? [],
+    subscriptionTier: (profileResult.data?.subscription_tier ?? "free") as SubscriptionTier,
+    proMemberSince: profileResult.data?.pro_member_since ?? null,
+  });
 
-  return (
-    <SubscriptionClient
-      isActive={isActive}
-      planName={subscription?.plan_name ?? null}
-      periodEnd={subscription?.current_period_end ?? null}
-      hasCustomer={!!subscription?.stripe_customer_id}
-      tier={tier}
-    />
-  );
+  return <SubscriptionClient summary={summary} />;
 }
