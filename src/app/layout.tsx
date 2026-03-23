@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/providers";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="min-h-screen antialiased">
+        <ServiceWorkerRegister />
         <Providers>{children}</Providers>
       </body>
     </html>
