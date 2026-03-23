@@ -15,14 +15,24 @@ export interface BillingPlan {
   paymentLink: string;
   badge?: string;
   tagline?: string;
+  landingTagline?: string;
   monthlyEquivalent?: string;
   features: string[];
+  landingFeatures?: string[];
 }
 
 export const FREE_PLAN = {
   label: "Free",
   displayPrice: "$0",
   renewalLabel: "forever",
+  highlights: [
+    "Daily reading",
+    "Basic chart summary",
+    "Libra archetype result",
+    "5 AI companion messages/day",
+    "3 journal entries/month",
+    "1 compatibility check/week",
+  ],
   features: [
     "One daily reading",
     "Basic chart summary",
@@ -47,12 +57,20 @@ export const BILLING_PLANS: Record<BillingPlanKey, BillingPlan> = {
     paymentLink: "https://buy.stripe.com/5kQ28r0Ep6tB2Ia7Dics800",
     badge: "Most Flexible",
     tagline: "Start with the full Premium experience for a low monthly price.",
+    landingTagline: "Full Premium access with the lightest monthly commitment.",
     features: [
       "Unlimited AI readings across all categories",
       "All reading tones, including blunt, poetic, practical, and seductive",
       "Unlimited AI companion sessions",
       "Unlimited compatibility readings",
       "Decision Decoder and Aesthetic Profile",
+    ],
+    landingFeatures: [
+      "Unlimited AI readings",
+      "All reading tones unlocked",
+      "Unlimited AI companion",
+      "Unlimited compatibility",
+      "Decision Decoder + Aesthetic Profile",
     ],
   },
   premium_annual: {
@@ -68,6 +86,7 @@ export const BILLING_PLANS: Record<BillingPlanKey, BillingPlan> = {
     paymentLink: "https://buy.stripe.com/eVq5kDcn719h0A28Hmcs801",
     badge: "Best Value",
     tagline: "Lock in the full Premium suite for the year at the lowest rate.",
+    landingTagline: "The strongest everyday plan for people who want the full Libra experience.",
     monthlyEquivalent: "$3.33/mo effective",
     features: [
       "Everything in Premium Monthly",
@@ -75,6 +94,13 @@ export const BILLING_PLANS: Record<BillingPlanKey, BillingPlan> = {
       "Unlimited journal + AI trend analysis",
       "Unlimited save-and-return access to your Premium tools",
       "Best option if you use the app daily",
+    ],
+    landingFeatures: [
+      "Everything in Premium Monthly",
+      "Lowest effective price",
+      "Unlimited journal + AI trend analysis",
+      "Unlimited save-and-return access",
+      "Best for daily use",
     ],
   },
   high_priestess_annual: {
@@ -90,6 +116,7 @@ export const BILLING_PLANS: Record<BillingPlanKey, BillingPlan> = {
     paymentLink: "https://buy.stripe.com/5kQaEX72N3hp0A2g9Ocs802",
     badge: "Guide Studio",
     tagline: "Everything in Premium, plus the client-facing Guide Studio tools.",
+    landingTagline: "Premium, elevated for guides, readers, and client-facing spiritual work.",
     monthlyEquivalent: "$13.33/mo effective",
     features: [
       "Everything in Premium",
@@ -97,6 +124,13 @@ export const BILLING_PLANS: Record<BillingPlanKey, BillingPlan> = {
       "Custom readings sent directly to clients",
       "Client inbox, tracking, and private notes",
       "High Priestess badge and Guide access across the app",
+    ],
+    landingFeatures: [
+      "Everything in Premium",
+      "Guide Studio for up to 3 clients",
+      "Custom client readings",
+      "Client inbox + private notes",
+      "High Priestess badge and guide access",
     ],
   },
 };
