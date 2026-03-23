@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/client";
 import { createServiceClient } from "@/lib/supabase/server";
+import { getResendClient, FROM_EMAIL } from "@/lib/email/client";
+import { SubscriptionConfirmedEmail } from "@/lib/email/templates/subscription-confirmed";
+import { render } from "@react-email/components";
 import type Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -31,12 +34,16 @@ export async function POST(req: NextRequest) {
 
       if (userId) {
         const isActive = ["active", "trialing"].includes(subscription.status);
+        const isNewSubscription = event.type === "customer.subscription.created";
+
+        const priceId = subscription.items.data[0]?.price?.id ?? "";
+        const planName = priceId.includes("annual") ? "premium_annual" : "premium_monthly";
 
         await supabase.from("subscriptions").upsert({
           user_id: userId,
           stripe_subscription_id: subscription.id,
           status: subscription.status,
-          plan_name: "premium",
+          plan_name: planName,
           current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
           current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
           cancel_at_period_end: subscription.cancel_at_period_end,
@@ -46,6 +53,32 @@ export async function POST(req: NextRequest) {
           .from("users")
           .update({ subscription_tier: isActive ? "premium" : "free" })
           .eq("id", userId);
+
+        // Send subscription confirmation email on new active subscription
+        if (isNewSubscription && isActive) {
+          const { data: userData } = await supabase
+            .from("users")
+            .select("display_name, email")
+            .eq("id", userId)
+            .single();
+
+          if (userData?.email) {
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://thedailylibra.com";
+            const html = await render(
+              SubscriptionConfirmedEmail({
+                displayName: userData.display_name ?? "Libra",
+                planName,
+                appUrl,
+              })
+            );
+            await getResendClient().emails.send({
+              from: FROM_EMAIL,
+              to: userData.email,
+              subject: "Premium is active. You're in.",
+              html,
+            });
+          }
+        }
       }
       break;
     }

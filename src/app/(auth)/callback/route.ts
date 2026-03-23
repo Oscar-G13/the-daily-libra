@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getResendClient, FROM_EMAIL } from "@/lib/email/client";
+import { WelcomeEmail } from "@/lib/email/templates/welcome";
+import { render } from "@react-email/components";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -19,11 +22,35 @@ export async function GET(request: NextRequest) {
       if (user) {
         const { data: profile } = await supabase
           .from("users")
-          .select("onboarding_completed")
+          .select("onboarding_completed, display_name, email")
           .eq("id", user.id)
           .single();
 
-        if (!profile?.onboarding_completed) {
+        const isNewUser = !profile?.onboarding_completed;
+
+        // Send welcome email to brand-new OAuth users
+        if (isNewUser && (profile?.email ?? user.email)) {
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://thedailylibra.com";
+          const html = await render(
+            WelcomeEmail({
+              displayName: profile?.display_name ?? user.email ?? "Libra",
+              appUrl,
+            })
+          );
+          // Fire and forget — don't block the redirect
+          getResendClient()
+            .emails.send({
+              from: FROM_EMAIL,
+              to: (profile?.email ?? user.email)!,
+              subject: "Welcome to The Daily Libra.",
+              html,
+            })
+            .catch(() => {});
+
+          return NextResponse.redirect(`${origin}/onboarding`);
+        }
+
+        if (isNewUser) {
           return NextResponse.redirect(`${origin}/onboarding`);
         }
       }
