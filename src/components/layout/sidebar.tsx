@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/decision", label: "Decision Decoder", icon: "⚖" },
   { href: "/moon", label: "Moon Calendar", icon: "🌙" },
   { href: "/profile", label: "My Profile", icon: "♎" },
+  { href: "/aesthetic", label: "Aesthetic Profile", icon: "♀" },
   { href: "/chart", label: "Birth Chart", icon: "✦" },
   { href: "/companion", label: "AI Companion", icon: "🪞" },
   { href: "/journal", label: "Journal", icon: "📖" },

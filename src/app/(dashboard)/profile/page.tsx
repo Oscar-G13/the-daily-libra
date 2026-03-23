@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { ARCHETYPE_LABELS, MODIFIER_LABELS } from "@/types";
 import { ARCHETYPE_DESCRIPTIONS } from "@/lib/astrology/archetypes";
-import type { LibraArchetype, ArchetypeModifier, NatalChart } from "@/types";
+import { AESTHETIC_PROFILES } from "@/lib/aesthetic/profiles";
+import type { LibraArchetype, ArchetypeModifier, AestheticStyle, NatalChart } from "@/types";
 import { formatDate } from "@/lib/utils";
+import Link from "next/link";
 
 export const metadata = { title: "My Profile" };
 
@@ -21,7 +23,9 @@ export default async function ProfilePage() {
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
   const archetype = libraProfile?.primary_archetype as LibraArchetype | null;
   const modifier = libraProfile?.secondary_modifier as ArchetypeModifier | null;
+  const aestheticStyle = libraProfile?.aesthetic_style as AestheticStyle | null;
   const archetypeData = archetype ? ARCHETYPE_DESCRIPTIONS[archetype] : null;
+  const aestheticProfile = aestheticStyle ? AESTHETIC_PROFILES[aestheticStyle] : null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -65,6 +69,53 @@ export default async function ProfilePage() {
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Aesthetic style */}
+      {aestheticProfile ? (
+        <div className={`glass-card p-6 border ${aestheticProfile.accentClass}`}>
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                Aesthetic Identity
+              </p>
+              <h2 className="font-serif text-xl text-foreground">{aestheticProfile.name}</h2>
+              <p className="text-xs text-foreground/50 italic mt-0.5">&ldquo;{aestheticProfile.tagline}&rdquo;</p>
+            </div>
+            <span className="text-2xl">{aestheticProfile.icon}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {aestheticProfile.traits.map((trait) => (
+              <span
+                key={trait}
+                className="text-xs px-2.5 py-1 rounded-full border border-white/[0.07] text-muted-foreground"
+              >
+                {trait}
+              </span>
+            ))}
+          </div>
+          <Link
+            href="/aesthetic"
+            className="text-xs text-muted-foreground/50 hover:text-gold/70 transition-colors"
+          >
+            Retake quiz →
+          </Link>
+        </div>
+      ) : (
+        <div className="glass-card p-6 border border-dashed border-white/[0.06]">
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
+            Aesthetic Identity
+          </p>
+          <p className="text-sm text-muted-foreground/60 mb-4">
+            You haven&apos;t discovered your aesthetic profile yet.
+          </p>
+          <Link
+            href="/aesthetic"
+            className="inline-flex items-center gap-1.5 text-sm text-gold/70 hover:text-gold transition-colors"
+          >
+            Discover your aesthetic ✦
+          </Link>
         </div>
       )}
 
