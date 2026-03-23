@@ -13,7 +13,7 @@ export async function GET() {
 
   const { data: userData } = await supabase
     .from("users")
-    .select("subscription_tier")
+    .select("subscription_tier, display_name, avatar_url, referral_code")
     .eq("id", user.id)
     .single();
 
@@ -23,16 +23,18 @@ export async function GET() {
 
   const [{ data: guideProfile }, { data: connections }, { data: recentReadings }] =
     await Promise.all([
-      (supabase as any).from("guide_profiles").select("*").eq("id", user.id).single(),
-      (supabase as any)
+      supabase.from("guide_profiles").select("*").eq("id", user.id).single(),
+      supabase
         .from("guide_client_connections")
         .select("id, client_name, client_email, status, created_at, accepted_at")
         .eq("guide_id", user.id)
         .neq("status", "archived")
         .order("created_at", { ascending: false }),
-      (supabase as any)
+      supabase
         .from("guide_readings")
-        .select("id, title, reading_type, is_published, created_at, published_at, client_connection_id")
+        .select(
+          "id, title, reading_type, is_published, created_at, published_at, client_connection_id"
+        )
         .eq("guide_id", user.id)
         .eq("is_archived", false)
         .order("created_at", { ascending: false })
@@ -41,6 +43,11 @@ export async function GET() {
 
   return NextResponse.json({
     guide: guideProfile,
+    guide_user: {
+      display_name: userData?.display_name ?? null,
+      avatar_url: userData?.avatar_url ?? null,
+      referral_code: userData?.referral_code ?? null,
+    },
     clients: connections ?? [],
     recent_readings: recentReadings ?? [],
   });

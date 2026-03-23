@@ -20,7 +20,18 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const allowed = ["business_name", "tagline", "bio", "website_url", "specialties"];
+  const allowed = [
+    "business_name",
+    "tagline",
+    "bio",
+    "website_url",
+    "specialties",
+    "public_enabled",
+    "profile_theme",
+    "profile_layout",
+    "welcome_headline",
+    "cta_label",
+  ];
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) updates[key] = body[key];
@@ -30,7 +41,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "No valid fields." }, { status: 400 });
   }
 
-  await (supabase as any)
+  await supabase
     .from("guide_profiles")
     .upsert({ id: user.id, ...updates, updated_at: new Date().toISOString() });
 

@@ -25,13 +25,22 @@ function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [refCode, setRefCode] = useState<string | null>(null);
+  const guideToken = searchParams.get("guide_token");
+  const nextPath = (() => {
+    const requested = searchParams.get("next") ?? "/dashboard";
+    return requested.startsWith("/") ? requested : "/dashboard";
+  })();
 
   useEffect(() => {
     // Prefer URL param, fallback to localStorage (set by /join/[code] page)
     const urlRef = searchParams.get("ref");
     const storedRef = typeof window !== "undefined" ? localStorage.getItem("ref_code") : null;
     setRefCode(urlRef || storedRef);
-  }, [searchParams]);
+
+    if (guideToken) {
+      localStorage.setItem("guide_token", guideToken);
+    }
+  }, [guideToken, searchParams]);
 
   async function claimReferral() {
     if (!refCode) return;
@@ -57,7 +66,7 @@ function SignupForm() {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     });
 
@@ -76,9 +85,13 @@ function SignupForm() {
     setLoading(true);
     // Persist ref code so auth/callback can claim it after OAuth redirect
     if (refCode) localStorage.setItem("ref_code", refCode);
+    if (guideToken) localStorage.setItem("guide_token", guideToken);
+
+    const redirectTo = new URL("/auth/callback", window.location.origin);
+    redirectTo.searchParams.set("next", nextPath);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: redirectTo.toString() },
     });
     if (error) {
       setError(error.message);
@@ -115,7 +128,11 @@ function SignupForm() {
         <h1 className="font-serif text-display-xs text-foreground mb-1">
           Start your Libra profile.
         </h1>
-        <p className="text-sm text-muted-foreground mb-8">Free forever. No card required.</p>
+        <p className="text-sm text-muted-foreground mb-8">
+          {nextPath === "/guidance"
+            ? "Create your free client account to receive private readings."
+            : "Free forever. No card required."}
+        </p>
 
         {error && (
           <div className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-red-300">

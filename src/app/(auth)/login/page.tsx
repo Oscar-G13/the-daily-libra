@@ -1,19 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const supabase = createClient();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const guideToken = searchParams.get("guide_token");
+  const destination = useMemo(() => {
+    const requested =
+      searchParams.get("next") ?? searchParams.get("redirectedFrom") ?? "/dashboard";
+    return requested.startsWith("/") ? requested : "/dashboard";
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (guideToken) {
+      localStorage.setItem("guide_token", guideToken);
+    }
+  }, [guideToken]);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -28,15 +50,22 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(destination);
     router.refresh();
   }
 
   async function handleGoogleLogin() {
     setLoading(true);
+    if (guideToken) {
+      localStorage.setItem("guide_token", guideToken);
+    }
+
+    const redirectTo = new URL("/auth/callback", window.location.origin);
+    redirectTo.searchParams.set("next", destination);
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: redirectTo.toString() },
     });
     if (error) {
       setError(error.message);
@@ -52,7 +81,10 @@ export default function LoginPage() {
     >
       <div className="glass-card p-8">
         <h1 className="font-serif text-display-xs text-foreground mb-2">Welcome back.</h1>
-        <p className="text-sm text-muted-foreground mb-8">Sign in to your Libra profile.</p>
+        <p className="text-sm text-muted-foreground mb-8">
+          Sign in to your Libra profile
+          {destination === "/guidance" ? " and open your client inbox." : "."}
+        </p>
 
         {error && (
           <div className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-red-300">

@@ -24,7 +24,7 @@ export default async function GuidePage() {
 
   const { data: userData } = await supabase
     .from("users")
-    .select("subscription_tier, display_name")
+    .select("subscription_tier, display_name, referral_code")
     .eq("id", user!.id)
     .single();
 
@@ -43,7 +43,9 @@ export default async function GuidePage() {
         .order("created_at", { ascending: false }),
       (supabase as any)
         .from("guide_readings")
-        .select("id, title, reading_type, is_published, client_viewed_at, created_at, published_at, client_connection_id")
+        .select(
+          "id, title, reading_type, is_published, client_viewed_at, created_at, published_at, client_connection_id"
+        )
         .eq("guide_id", user!.id)
         .eq("is_archived", false)
         .order("created_at", { ascending: false })
@@ -98,6 +100,14 @@ export default async function GuidePage() {
           )}
         </div>
         <div className="flex gap-2">
+          {userData?.referral_code && (
+            <Link
+              href={`/guides/${userData.referral_code}`}
+              className="text-xs px-3 py-1.5 rounded-lg border border-white/[0.08] text-muted-foreground hover:text-foreground hover:border-gold/20 transition-all"
+            >
+              View Public Profile
+            </Link>
+          )}
           <Link
             href="/guide/profile"
             className="text-xs px-3 py-1.5 rounded-lg border border-white/[0.08] text-muted-foreground hover:text-foreground hover:border-gold/20 transition-all"
@@ -116,10 +126,17 @@ export default async function GuidePage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Active Clients", value: activeClients.length, max: guideProfile?.client_slots ?? 3 },
+          {
+            label: "Active Clients",
+            value: activeClients.length,
+            max: guideProfile?.client_slots ?? 3,
+          },
           { label: "Pending Invites", value: pendingClients.length },
           { label: "Unread by Clients", value: totalUnread },
-          { label: "Readings Sent", value: Object.values(readingCountMap).reduce((a, b) => a + b, 0) },
+          {
+            label: "Readings Sent",
+            value: Object.values(readingCountMap).reduce((a, b) => a + b, 0),
+          },
         ].map(({ label, value, max }) => (
           <div key={label} className="glass-card p-4 text-center">
             <p className="text-2xl font-medium text-foreground">
@@ -184,9 +201,7 @@ export default async function GuidePage() {
                 className="glass-card px-4 py-3 flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-gold/50 shrink-0">
-                    {r.is_published ? "🔮" : "📝"}
-                  </span>
+                  <span className="text-gold/50 shrink-0">{r.is_published ? "🔮" : "📝"}</span>
                   <div className="min-w-0">
                     <p className="text-sm text-foreground/80 truncate">{r.title}</p>
                     <p className="text-xs text-muted-foreground/40">

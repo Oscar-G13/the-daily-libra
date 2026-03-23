@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
     "/community",
     "/admin",
   ];
-  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+  const isProtected = protectedPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
@@ -57,6 +57,14 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect logged-in users away from auth pages
   if (user && (pathname === "/login" || pathname === "/signup")) {
+    const nextPath =
+      request.nextUrl.searchParams.get("next") ??
+      request.nextUrl.searchParams.get("redirectedFrom");
+
+    if (nextPath?.startsWith("/")) {
+      return NextResponse.redirect(new URL(nextPath, request.url));
+    }
+
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
