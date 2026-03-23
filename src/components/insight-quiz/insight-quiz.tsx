@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGamification } from "@/components/gamification/provider";
+import { ShareToFeed } from "@/components/feed/share-to-feed";
 
 interface Question {
   id: string;
@@ -507,12 +508,20 @@ export function InsightQuiz() {
               </p>
             </motion.div>
 
-            <button
-              onClick={generate}
-              className="w-full py-3 rounded-xl border border-white/[0.06] text-sm text-muted-foreground hover:text-foreground hover:border-gold/20 transition-all"
-            >
-              Start a new session
-            </button>
+            <div className="flex items-center gap-3">
+              <ShareToFeed
+                content={portrait.slice(0, 500)}
+                postType="insight"
+                label="Share excerpt to Collective"
+                className="flex-1 text-center"
+              />
+              <button
+                onClick={generate}
+                className="flex-1 py-3 rounded-xl border border-white/[0.06] text-sm text-muted-foreground hover:text-foreground hover:border-gold/20 transition-all"
+              >
+                Start a new session
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
