@@ -14,6 +14,7 @@ import { StreakCard } from "@/components/dashboard/streak-card";
 import { AchievementsStrip } from "@/components/dashboard/achievements-strip";
 import { ReadingHistoryStrip } from "@/components/dashboard/reading-history-strip";
 import { CosmicRankCard } from "@/components/gamification/cosmic-rank-card";
+import { DailyChallenges } from "@/components/challenges/daily-challenges";
 import { CosmicWeatherCard } from "@/components/dashboard/cosmic-weather-card";
 import { HarmonyScoreCard } from "@/components/dashboard/harmony-score-card";
 import { VenusTrackerCard } from "@/components/dashboard/venus-tracker-card";
@@ -350,6 +351,9 @@ export default async function DashboardPage() {
         <ChartSnapshot chart={chart} />
         <RitualCard userId={user!.id} />
       </div>
+
+      {/* Daily Challenges */}
+      <DailyChallenges />
 
       {/* Cosmic Rank */}
       <CosmicRankCard

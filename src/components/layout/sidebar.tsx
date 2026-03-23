@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { href: "/chart", label: "Birth Chart", icon: "✦", pro: false },
   { href: "/companion", label: "AI Companion", icon: "🪞", pro: false },
   { href: "/journal", label: "Journal", icon: "📖", pro: false },
+  { href: "/community", label: "The Collective", icon: "🌐", pro: false },
   { href: "/subscription", label: "Premium", icon: "💎", pro: false },
   { href: "/settings", label: "Settings", icon: "⚙️" },
 ];
