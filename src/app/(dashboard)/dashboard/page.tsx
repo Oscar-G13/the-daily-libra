@@ -10,6 +10,8 @@ import { AssessmentProfileCard } from "@/components/dashboard/assessment-profile
 import { MoonPhaseCard } from "@/components/dashboard/moon-phase-card";
 import { MoodTrendCard } from "@/components/dashboard/mood-trend-card";
 import { TraitPulseCard } from "@/components/dashboard/trait-pulse-card";
+import { StreakCard } from "@/components/dashboard/streak-card";
+import { AchievementsStrip } from "@/components/dashboard/achievements-strip";
 import { formatDate } from "@/lib/utils";
 import type { NatalChart } from "@/types";
 
@@ -19,10 +21,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Date range for mood trend (last 14 days)
+  // 14-day window for mood trend
   const today = new Date();
   const twoWeeksAgo = new Date(today);
   twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 13);
+  const twoWeeksAgoStr = twoWeeksAgo.toISOString().split("T")[0];
 
   const [
     { data: userData },
@@ -33,10 +36,15 @@ export default async function DashboardPage() {
     { data: assessmentProfile },
     { data: moodLogs },
     { data: topTraits },
+    { count: journalCount },
+    { count: moodDayCount },
+    { count: readingCount },
+    { data: aiMemory },
+    { data: journalDates },
   ] = await Promise.all([
     supabase
       .from("users")
-      .select("display_name, tone_preference, subscription_tier")
+      .select("display_name, tone_preference, subscription_tier, app_streak, last_active_date")
       .eq("id", user!.id)
       .single(),
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user!.id).single(),
@@ -64,7 +72,7 @@ export default async function DashboardPage() {
       .from("mood_logs")
       .select("log_date, mood_score")
       .eq("user_id", user!.id)
-      .gte("log_date", twoWeeksAgo.toISOString().split("T")[0])
+      .gte("log_date", twoWeeksAgoStr)
       .order("log_date", { ascending: true }),
     supabase
       .from("user_profile_traits")
@@ -72,9 +80,59 @@ export default async function DashboardPage() {
       .eq("user_id", user!.id)
       .order("normalized_score", { ascending: false })
       .limit(10),
+    supabase
+      .from("journal_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user!.id),
+    supabase
+      .from("mood_logs")
+      .select("log_date", { count: "exact", head: true })
+      .eq("user_id", user!.id),
+    supabase
+      .from("daily_readings")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user!.id),
+    supabase.from("ai_memory").select("id").eq("user_id", user!.id).limit(1),
+    supabase
+      .from("journal_entries")
+      .select("created_at")
+      .eq("user_id", user!.id)
+      .order("created_at", { ascending: false })
+      .limit(30),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
+  const appStreak = userData?.app_streak ?? 0;
+
+  // Compute journal streak from recent entries
+  const journalStreak = (() => {
+    if (!journalDates || journalDates.length === 0) return 0;
+    const dates = Array.from(
+      new Set(journalDates.map((j) => j.created_at.split("T")[0])),
+    ).sort((a, b) => b.localeCompare(a));
+    let streak = 0;
+    let cursor = new Date();
+    cursor.setHours(0, 0, 0, 0);
+    for (const d of dates) {
+      const curStr = cursor.toISOString().split("T")[0];
+      if (d === curStr) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  })();
+
+  // Active days for streak card dot grid = days with mood logs (last 7 days)
+  const activeDays = (moodLogs ?? [])
+    .map((l) => l.log_date)
+    .filter((d) => {
+      const cutoff = new Date(today);
+      cutoff.setDate(cutoff.getDate() - 6);
+      return d >= cutoff.toISOString().split("T")[0];
+    });
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -90,7 +148,6 @@ export default async function DashboardPage() {
 
       {/* Primary grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Daily reading — spans 2 cols */}
         <div className="lg:col-span-2">
           <DailyReadingCard
             userId={user!.id}
@@ -99,8 +156,6 @@ export default async function DashboardPage() {
             readingDate={latestReading?.reading_date ?? null}
           />
         </div>
-
-        {/* Moon phase */}
         <div>
           <MoonPhaseCard />
         </div>
@@ -120,17 +175,31 @@ export default async function DashboardPage() {
         <MoodTrendCard logs={moodLogs ?? []} />
       </div>
 
-      {/* Secondary grid */}
+      {/* Streak + chart + ritual */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <StreakCard appStreak={appStreak} journalStreak={journalStreak} activeDays={activeDays} />
         <ChartSnapshot chart={chart} />
-        {topTraits && topTraits.length > 0 && (
-          <ArchetypeCard
-            archetype={libraProfile?.primary_archetype ?? null}
-            modifier={libraProfile?.secondary_modifier ?? null}
-          />
-        )}
         <RitualCard userId={user!.id} />
       </div>
+
+      {/* Archetype card (shown when assessment done) */}
+      {topTraits && topTraits.length > 0 && (
+        <ArchetypeCard
+          archetype={libraProfile?.primary_archetype ?? null}
+          modifier={libraProfile?.secondary_modifier ?? null}
+        />
+      )}
+
+      {/* Achievements */}
+      <AchievementsStrip
+        readingCount={readingCount ?? 0}
+        assessmentComplete={!!assessmentProfile}
+        journalCount={journalCount ?? 0}
+        moodLogDays={moodDayCount ?? 0}
+        hasCompanionMessages={(aiMemory?.length ?? 0) > 0}
+        hasBirthChart={!!birthProfile}
+        onboardingComplete={true}
+      />
 
       {/* Assessment CTA or profile card */}
       {assessmentProfile ? (

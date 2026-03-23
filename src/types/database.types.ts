@@ -949,11 +949,13 @@ export type Database = {
       };
       users: {
         Row: {
+          app_streak: number;
           created_at: string;
           display_name: string | null;
           email: string;
           goals: string[] | null;
           id: string;
+          last_active_date: string | null;
           onboarding_completed: boolean | null;
           pronouns: string | null;
           relationship_status: string | null;
@@ -962,11 +964,13 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          app_streak?: number;
           created_at?: string;
           display_name?: string | null;
           email: string;
           goals?: string[] | null;
           id: string;
+          last_active_date?: string | null;
           onboarding_completed?: boolean | null;
           pronouns?: string | null;
           relationship_status?: string | null;
@@ -975,11 +979,13 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          app_streak?: number;
           created_at?: string;
           display_name?: string | null;
           email?: string;
           goals?: string[] | null;
           id?: string;
+          last_active_date?: string | null;
           onboarding_completed?: boolean | null;
           pronouns?: string | null;
           relationship_status?: string | null;

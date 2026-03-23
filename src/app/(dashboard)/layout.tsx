@@ -24,6 +24,30 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/onboarding");
   }
 
+  // Update streak — fire and forget, non-blocking
+  void (async () => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const { data: streakData } = await supabase
+      .from("users")
+      .select("app_streak, last_active_date")
+      .eq("id", user.id)
+      .single();
+
+    if (streakData) {
+      const last = streakData.last_active_date;
+      if (last !== todayStr) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split("T")[0];
+        const newStreak = last === yesterdayStr ? (streakData.app_streak ?? 0) + 1 : 1;
+        await supabase
+          .from("users")
+          .update({ app_streak: newStreak, last_active_date: todayStr })
+          .eq("id", user.id);
+      }
+    }
+  })();
+
   return (
     <div className="min-h-screen bg-obsidian flex">
       {/* Sidebar */}
