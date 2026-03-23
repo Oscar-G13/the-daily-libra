@@ -1,5 +1,7 @@
 -- Migration 011: Admin system + public share tokens
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Add admin flag to users
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin boolean DEFAULT false;
 
@@ -11,10 +13,10 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS account_status text DEFAULT 'active'
 ALTER TABLE users ADD COLUMN IF NOT EXISTS muted_until timestamptz;
 
 -- Public share token for no-auth profile viewing
-ALTER TABLE users ADD COLUMN IF NOT EXISTS share_token text UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex');
+ALTER TABLE users ADD COLUMN IF NOT EXISTS share_token text UNIQUE DEFAULT encode(extensions.gen_random_bytes(16), 'hex');
 
 -- Backfill share tokens for existing users
-UPDATE users SET share_token = encode(gen_random_bytes(16), 'hex') WHERE share_token IS NULL;
+UPDATE users SET share_token = encode(extensions.gen_random_bytes(16), 'hex') WHERE share_token IS NULL;
 
 -- Grant Oscar admin privileges
 UPDATE users SET is_admin = true WHERE email = 'oscar@arxsable.ai';

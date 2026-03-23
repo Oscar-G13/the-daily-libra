@@ -76,18 +76,36 @@ export async function POST(req: NextRequest) {
     }
 
     // Update user profile
-    const { error: userError } = await supabase
-      .from("users")
-      .update({
-        pronouns: pronouns || null,
-        relationship_status: relationshipStatus || null,
-        goals: goals ?? [],
-        tone_preference: tonePreference ?? "gentle",
-        onboarding_completed: true,
-      })
-      .eq("id", user.id);
+    const userUpdates = {
+      pronouns: pronouns || null,
+      relationship_status: relationshipStatus || null,
+      goals: goals ?? [],
+      tone_preference: tonePreference ?? "gentle",
+      onboarding_completed: true,
+    };
 
-    if (userError) throw userError;
+    const { data: updatedUser, error: userError } = await supabase
+      .from("users")
+      .update(userUpdates)
+      .eq("id", user.id)
+      .select("id, onboarding_completed")
+      .maybeSingle();
+
+    if (userError || !updatedUser?.onboarding_completed) {
+      console.error("Onboarding user profile update failed", {
+        userId: user.id,
+        error: userError,
+        updatedUser,
+        userUpdateSummary: {
+          hasPronouns: Boolean(userUpdates.pronouns),
+          relationshipStatus: userUpdates.relationship_status,
+          goalsCount: userUpdates.goals.length,
+          tonePreference: userUpdates.tone_preference,
+          onboardingCompleted: userUpdates.onboarding_completed,
+        },
+      });
+      throw userError ?? new Error("Onboarding state did not persist");
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
