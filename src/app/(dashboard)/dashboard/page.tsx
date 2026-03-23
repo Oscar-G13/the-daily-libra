@@ -5,6 +5,8 @@ import { ChartSnapshot } from "@/components/dashboard/chart-snapshot";
 import { MoodCheckin } from "@/components/dashboard/mood-checkin";
 import { RitualCard } from "@/components/dashboard/ritual-card";
 import { QuickActions } from "@/components/dashboard/quick-actions";
+import { AssessmentCTA } from "@/components/dashboard/assessment-cta";
+import { AssessmentProfileCard } from "@/components/dashboard/assessment-profile-card";
 import { formatDate } from "@/lib/utils";
 import type { NatalChart } from "@/types";
 
@@ -20,6 +22,7 @@ export default async function DashboardPage() {
     { data: libraProfile },
     { data: todaysMood },
     { data: latestReading },
+    { data: assessmentProfile },
   ] = await Promise.all([
     supabase
       .from("users")
@@ -42,6 +45,11 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(1)
       .single(),
+    supabase
+      .from("user_profile_summary")
+      .select("archetype_label, archetype_subtitle")
+      .eq("user_id", user!.id)
+      .maybeSingle(),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
@@ -85,6 +93,16 @@ export default async function DashboardPage() {
         <MoodCheckin userId={user!.id} todaysMood={todaysMood} />
         <RitualCard userId={user!.id} />
       </div>
+
+      {/* Assessment CTA or profile card */}
+      {assessmentProfile ? (
+        <AssessmentProfileCard
+          archetypeLabel={assessmentProfile.archetype_label}
+          archetypeSubtitle={assessmentProfile.archetype_subtitle}
+        />
+      ) : (
+        <AssessmentCTA />
+      )}
 
       {/* Quick actions */}
       <QuickActions tier={userData?.subscription_tier ?? "free"} />

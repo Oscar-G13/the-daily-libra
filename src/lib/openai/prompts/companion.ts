@@ -7,6 +7,7 @@ interface CompanionContext {
   moonSign?: string;
   venusSign?: string;
   aiMemorySummary?: string;
+  psychographicProfile?: string;
   recentMoodSummary?: string;
 }
 
@@ -25,6 +26,7 @@ THEIR PROFILE:
 ${ctx.moonSign ? `- Moon: ${ctx.moonSign}` : ""}
 ${ctx.venusSign ? `- Venus: ${ctx.venusSign}` : ""}
 ${ctx.aiMemorySummary ? `\nMEMORY FROM PRIOR SESSIONS:\n${ctx.aiMemorySummary}` : ""}
+${ctx.psychographicProfile ? `\nDEEP PSYCHOGRAPHIC PROFILE:\n${ctx.psychographicProfile}` : ""}
 ${ctx.recentMoodSummary ? `\nRECENT MOOD PATTERN:\n${ctx.recentMoodSummary}` : ""}
 
 YOUR ROLE:

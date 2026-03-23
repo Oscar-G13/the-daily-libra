@@ -12,6 +12,7 @@ interface ReadingContext {
   category: ReadingCategory;
   tone: ReadingTone;
   aiMemorySummary?: string;
+  psychographicProfile?: string;
   currentDate: string;
 }
 
@@ -69,6 +70,7 @@ THEIR PROFILE:
 - Sun: ${ctx.sunSign}${ctx.moonSign ? `, Moon: ${ctx.moonSign}` : ""}${ctx.risingSign ? `, Rising: ${ctx.risingSign}` : ""}${ctx.venusSign ? `, Venus: ${ctx.venusSign}` : ""}${ctx.marsSign ? `, Mars: ${ctx.marsSign}` : ""}
 - Today's date: ${ctx.currentDate}
 ${ctx.aiMemorySummary ? `\nMEMORY FROM PRIOR SESSIONS:\n${ctx.aiMemorySummary}` : ""}
+${ctx.psychographicProfile ? `\nDEEP PSYCHOGRAPHIC PROFILE:\n${ctx.psychographicProfile}` : ""}
 
 TONE: ${TONE_INSTRUCTIONS[ctx.tone]}
 

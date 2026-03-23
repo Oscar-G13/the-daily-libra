@@ -20,15 +20,21 @@ export async function POST(req: NextRequest) {
   const userNote: string | undefined = body.note;
 
   // Fetch user data
-  const [{ data: userData }, { data: birthProfile }, { data: libraProfile }] = await Promise.all([
-    supabase.from("users").select("display_name, tone_preference").eq("id", user.id).single(),
-    supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
-    supabase
-      .from("libra_profiles")
-      .select("primary_archetype, secondary_modifier, ai_memory_summary")
-      .eq("user_id", user.id)
-      .single(),
-  ]);
+  const [{ data: userData }, { data: birthProfile }, { data: libraProfile }, { data: aiMemory }] =
+    await Promise.all([
+      supabase.from("users").select("display_name, tone_preference").eq("id", user.id).single(),
+      supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
+      supabase
+        .from("libra_profiles")
+        .select("primary_archetype, secondary_modifier, ai_memory_summary")
+        .eq("user_id", user.id)
+        .single(),
+      supabase
+        .from("ai_personalization_memory")
+        .select("system_prompt_fragment")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
   if (!userData || !birthProfile || !libraProfile) {
     return NextResponse.json({ error: "Profile incomplete" }, { status: 400 });
@@ -75,6 +81,7 @@ export async function POST(req: NextRequest) {
     category,
     tone,
     aiMemorySummary: libraProfile.ai_memory_summary ?? undefined,
+    psychographicProfile: aiMemory?.system_prompt_fragment ?? undefined,
     currentDate: new Date().toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",

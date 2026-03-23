@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
     "/subscription",
     "/settings",
     "/onboarding",
+    "/assessment",
   ];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 

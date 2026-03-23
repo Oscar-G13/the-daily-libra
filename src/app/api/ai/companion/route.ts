@@ -54,15 +54,21 @@ export async function POST(req: NextRequest) {
   }
 
   // Fetch profile
-  const [{ data: userData }, { data: birthProfile }, { data: libraProfile }] = await Promise.all([
-    supabase.from("users").select("display_name").eq("id", user.id).single(),
-    supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
-    supabase
-      .from("libra_profiles")
-      .select("primary_archetype, secondary_modifier, ai_memory_summary")
-      .eq("user_id", user.id)
-      .single(),
-  ]);
+  const [{ data: userData }, { data: birthProfile }, { data: libraProfile }, { data: aiMemory }] =
+    await Promise.all([
+      supabase.from("users").select("display_name").eq("id", user.id).single(),
+      supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user.id).single(),
+      supabase
+        .from("libra_profiles")
+        .select("primary_archetype, secondary_modifier, ai_memory_summary")
+        .eq("user_id", user.id)
+        .single(),
+      supabase
+        .from("ai_personalization_memory")
+        .select("system_prompt_fragment")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
   const chart = birthProfile?.natal_chart_json as Record<string, { sign: string }> | null;
 
@@ -73,6 +79,7 @@ export async function POST(req: NextRequest) {
     moonSign: chart?.moon?.sign,
     venusSign: chart?.venus?.sign,
     aiMemorySummary: libraProfile?.ai_memory_summary ?? undefined,
+    psychographicProfile: aiMemory?.system_prompt_fragment ?? undefined,
   });
 
   const openai = getOpenAIClient();
