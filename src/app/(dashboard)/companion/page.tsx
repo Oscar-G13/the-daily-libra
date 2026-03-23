@@ -9,10 +9,11 @@ export default async function CompanionPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: userData }] = await Promise.all([
-    supabase.from("users").select("display_name, subscription_tier").eq("id", user!.id).single(),
-    supabase.from("libra_profiles").select("primary_archetype").eq("user_id", user!.id).single(),
-  ]);
+  const { data: userData } = await supabase
+    .from("users")
+    .select("display_name, subscription_tier")
+    .eq("id", user!.id)
+    .single();
 
   return (
     <div className="max-w-3xl mx-auto h-[calc(100vh-8rem)]">

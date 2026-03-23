@@ -58,15 +58,20 @@ export async function POST(req: NextRequest) {
 
   // Call OpenAI for interpretation
   const openai = getOpenAIClient();
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    response_format: { type: "json_object" },
-    temperature: 0.7,
-    messages: [
-      { role: "system", content: buildProfileGenerationSystemPrompt() },
-      { role: "user", content: buildProfileGenerationUserPrompt(traitMap) },
-    ],
-  });
+  let completion;
+  try {
+    completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      messages: [
+        { role: "system", content: buildProfileGenerationSystemPrompt() },
+        { role: "user", content: buildProfileGenerationUserPrompt(traitMap) },
+      ],
+    });
+  } catch {
+    return NextResponse.json({ error: "AI service unavailable. Please try again." }, { status: 503 });
+  }
 
   const rawContent = completion.choices[0]?.message?.content ?? "{}";
   let profile: ProfileOutput;

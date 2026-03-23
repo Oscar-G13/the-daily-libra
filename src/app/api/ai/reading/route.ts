@@ -95,7 +95,9 @@ export async function POST(req: NextRequest) {
   const openai = getOpenAIClient();
 
   // Stream the response
-  const stream = await openai.chat.completions.create({
+  let stream;
+  try {
+    stream = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
@@ -105,27 +107,36 @@ export async function POST(req: NextRequest) {
     temperature: 0.85,
     stream: true,
   });
+  } catch {
+    return NextResponse.json({ error: "AI service unavailable. Please try again." }, { status: 503 });
+  }
 
   let fullText = "";
 
   const readable = new ReadableStream({
     async start(controller) {
-      for await (const chunk of stream) {
-        const text = chunk.choices[0]?.delta?.content ?? "";
-        fullText += text;
-        controller.enqueue(new TextEncoder().encode(text));
+      try {
+        for await (const chunk of stream) {
+          const text = chunk.choices[0]?.delta?.content ?? "";
+          fullText += text;
+          controller.enqueue(new TextEncoder().encode(text));
+        }
+
+        // Save reading to DB
+        await supabase.from("daily_readings").insert({
+          user_id: user.id,
+          category,
+          tone,
+          output_text: fullText,
+          prompt_context_json: { archetype: libraProfile.primary_archetype, chart: chart },
+        });
+      } catch {
+        controller.enqueue(
+          new TextEncoder().encode("\n\n[Something went wrong. Please try again.]"),
+        );
+      } finally {
+        controller.close();
       }
-
-      // Save reading to DB
-      await supabase.from("daily_readings").insert({
-        user_id: user.id,
-        category,
-        tone,
-        output_text: fullText,
-        prompt_context_json: { archetype: libraProfile.primary_archetype, chart: chart },
-      });
-
-      controller.close();
     },
   });
 

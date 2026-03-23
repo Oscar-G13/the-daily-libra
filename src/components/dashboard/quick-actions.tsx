@@ -2,9 +2,9 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const actions = [
-  { label: "Love Reading", href: "/reading/love", icon: "♥️", premium: true },
-  { label: "Career Reading", href: "/reading/career", icon: "⚖️", premium: true },
-  { label: "Shadow Work", href: "/reading/shadow", icon: "🌑", premium: true },
+  { label: "Love Reading", href: "/reading", icon: "♥️", premium: true },
+  { label: "Career Reading", href: "/reading", icon: "⚖️", premium: true },
+  { label: "Shadow Work", href: "/reading", icon: "🌑", premium: true },
   { label: "AI Companion", href: "/companion", icon: "🪞", premium: false },
   { label: "Journal", href: "/journal", icon: "📖", premium: false },
   { label: "Birth Chart", href: "/chart", icon: "🌙", premium: false },
