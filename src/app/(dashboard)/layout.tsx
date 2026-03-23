@@ -5,6 +5,7 @@ import { DashboardNav } from "@/components/layout/dashboard-nav";
 import { GamificationProvider } from "@/components/gamification/provider";
 import { ClaimReferralOnLoad } from "@/components/referral/claim-on-load";
 import { ClaimGuideTokenOnLoad } from "@/components/guide/claim-guide-token";
+import { AlertBanner } from "@/components/alerts/alert-banner";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -20,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const profileResult = (await (supabase as any)
     .from("users")
-    .select("onboarding_completed, display_name, subscription_tier, xp_total, xp_level")
+    .select("onboarding_completed, display_name, subscription_tier, xp_total, xp_level, is_admin")
     .eq("id", user.id)
     .single()) as {
     data: {
@@ -29,6 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       subscription_tier: string | null;
       xp_total: number | null;
       xp_level: number | null;
+      is_admin: boolean | null;
     } | null;
   };
   const profile = profileResult.data;
@@ -80,12 +82,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
           initialXP={profile?.xp_total ?? 0}
           initialLevel={profile?.xp_level ?? 1}
           hasGuidance={hasGuidance}
+          isAdmin={profile?.is_admin ?? false}
         />
 
         {/* Main content */}
         <div className="flex-1 flex flex-col min-h-screen ml-0 md:ml-64">
           <ClaimReferralOnLoad />
           <ClaimGuideTokenOnLoad />
+          <AlertBanner />
           <DashboardNav />
           <main className="flex-1 px-4 sm:px-6 py-6">{children}</main>
         </div>

@@ -39,6 +39,7 @@ interface DashboardSidebarProps {
   initialXP?: number;
   initialLevel?: number;
   hasGuidance?: boolean;
+  isAdmin?: boolean;
 }
 
 export function DashboardSidebar({
@@ -47,6 +48,7 @@ export function DashboardSidebar({
   initialXP = 0,
   initialLevel = 1,
   hasGuidance = false,
+  isAdmin = false,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -63,7 +65,14 @@ export function DashboardSidebar({
 
       {/* User */}
       <div className="px-5 py-4 border-b border-white/[0.04]">
-        <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-foreground truncate flex-1">{displayName}</p>
+          {isAdmin && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-gold/15 text-gold-200 border border-gold/30 font-bold tracking-wide shrink-0">
+              ADMIN
+            </span>
+          )}
+        </div>
         <span
           className={cn(
             "text-xs px-2 py-0.5 rounded-full inline-block mt-1",
@@ -151,6 +160,37 @@ export function DashboardSidebar({
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
                     isActive
                       ? "bg-violet-500/[0.08] text-violet-300 border border-violet-500/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
+                  )}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span className="flex-1">{item.label}</span>
+                </Link>
+              );
+            })}
+          </>
+        )}
+
+        {/* Admin section */}
+        {isAdmin && (
+          <>
+            <div className="pt-3 pb-1 px-3">
+              <p className="text-[10px] uppercase tracking-widest text-gold/40">Admin</p>
+            </div>
+            {[
+              { href: "/admin", label: "Admin Panel", icon: "⚙" },
+              { href: "/admin/users", label: "Users", icon: "👥" },
+            ].map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
+                    isActive
+                      ? "bg-gold/[0.08] text-gold-200 border border-gold/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
                   )}
                 >

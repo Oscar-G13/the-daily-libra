@@ -28,7 +28,7 @@ export const PLANS = {
   high_priestess_annual: {
     // Set up in Stripe dashboard: $160/yr product named "High Priestess"
     // Nickname field must contain "high_priestess" for webhook detection
-    paymentLink: "https://buy.stripe.com/PLACEHOLDER_HIGH_PRIESTESS",
+    paymentLink: "https://buy.stripe.com/5kQaEX72N3hp0A2g9Ocs802",
     name: "High Priestess",
     price: 160,
     interval: "year" as const,

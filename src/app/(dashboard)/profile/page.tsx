@@ -5,6 +5,7 @@ import { AESTHETIC_PROFILES } from "@/lib/aesthetic/profiles";
 import type { LibraArchetype, ArchetypeModifier, AestheticStyle, NatalChart } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { ShareProfileButton } from "@/components/profile/share-profile-button";
 
 export const metadata = { title: "My Profile" };
 
@@ -41,6 +42,8 @@ export default async function ProfilePage() {
 
   const avatarUrl = (userData as any)?.avatar_url as string | null;
   const bio = (userData as any)?.profile_bio as string | null;
+  const shareToken = (userData as any)?.share_token as string | null;
+  const isAdmin = (userData as any)?.is_admin as boolean | null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -61,17 +64,32 @@ export default async function ProfilePage() {
           )}
         </div>
         <div className="flex-1">
-          <h1 className="font-serif text-display-xs text-foreground">
-            {userData?.display_name ?? "My Libra Profile"}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-serif text-display-xs text-foreground">
+              {userData?.display_name ?? "My Libra Profile"}
+            </h1>
+            {isAdmin && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-gold/15 text-gold-200 border border-gold/30 font-bold tracking-wide">
+                ADMIN
+              </span>
+            )}
+          </div>
           {bio ? (
             <p className="text-sm text-muted-foreground/70 mt-1 leading-relaxed">{bio}</p>
           ) : (
             <p className="text-sm text-muted-foreground mt-1">Your evolving identity map.</p>
           )}
-          <Link href="/settings" className="text-xs text-muted-foreground/30 hover:text-gold/50 transition-colors mt-1 inline-block">
-            Edit profile →
-          </Link>
+          <div className="flex items-center gap-3 mt-1">
+            <Link href="/settings" className="text-xs text-muted-foreground/30 hover:text-gold/50 transition-colors">
+              Edit profile →
+            </Link>
+            {shareToken && (
+              <>
+                <span className="text-muted-foreground/20">·</span>
+                <ShareProfileButton shareToken={shareToken} />
+              </>
+            )}
+          </div>
         </div>
       </div>
 
