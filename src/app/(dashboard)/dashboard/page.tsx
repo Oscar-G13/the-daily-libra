@@ -7,6 +7,9 @@ import { RitualCard } from "@/components/dashboard/ritual-card";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { AssessmentCTA } from "@/components/dashboard/assessment-cta";
 import { AssessmentProfileCard } from "@/components/dashboard/assessment-profile-card";
+import { MoonPhaseCard } from "@/components/dashboard/moon-phase-card";
+import { MoodTrendCard } from "@/components/dashboard/mood-trend-card";
+import { TraitPulseCard } from "@/components/dashboard/trait-pulse-card";
 import { formatDate } from "@/lib/utils";
 import type { NatalChart } from "@/types";
 
@@ -16,6 +19,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Date range for mood trend (last 14 days)
+  const today = new Date();
+  const twoWeeksAgo = new Date(today);
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 13);
+
   const [
     { data: userData },
     { data: birthProfile },
@@ -23,6 +31,8 @@ export default async function DashboardPage() {
     { data: todaysMood },
     { data: latestReading },
     { data: assessmentProfile },
+    { data: moodLogs },
+    { data: topTraits },
   ] = await Promise.all([
     supabase
       .from("users")
@@ -50,6 +60,18 @@ export default async function DashboardPage() {
       .select("archetype_label, archetype_subtitle")
       .eq("user_id", user!.id)
       .maybeSingle(),
+    supabase
+      .from("mood_logs")
+      .select("log_date, mood_score")
+      .eq("user_id", user!.id)
+      .gte("log_date", twoWeeksAgo.toISOString().split("T")[0])
+      .order("log_date", { ascending: true }),
+    supabase
+      .from("user_profile_traits")
+      .select("trait_key, normalized_score, percentile_band")
+      .eq("user_id", user!.id)
+      .order("normalized_score", { ascending: false })
+      .limit(10),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
@@ -78,19 +100,35 @@ export default async function DashboardPage() {
           />
         </div>
 
-        {/* Archetype card */}
+        {/* Moon phase */}
         <div>
+          <MoonPhaseCard />
+        </div>
+      </div>
+
+      {/* Traits + mood row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {topTraits && topTraits.length > 0 ? (
+          <TraitPulseCard traits={topTraits} />
+        ) : (
           <ArchetypeCard
             archetype={libraProfile?.primary_archetype ?? null}
             modifier={libraProfile?.secondary_modifier ?? null}
           />
-        </div>
+        )}
+        <MoodCheckin userId={user!.id} todaysMood={todaysMood} />
+        <MoodTrendCard logs={moodLogs ?? []} />
       </div>
 
       {/* Secondary grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <ChartSnapshot chart={chart} />
-        <MoodCheckin userId={user!.id} todaysMood={todaysMood} />
+        {topTraits && topTraits.length > 0 && (
+          <ArchetypeCard
+            archetype={libraProfile?.primary_archetype ?? null}
+            modifier={libraProfile?.secondary_modifier ?? null}
+          />
+        )}
         <RitualCard userId={user!.id} />
       </div>
 
