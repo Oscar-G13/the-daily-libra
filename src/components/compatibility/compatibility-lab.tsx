@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGamification } from "@/components/gamification/provider";
+import { ShareToFeed } from "@/components/feed/share-to-feed";
 
 const RELATIONSHIP_TYPES = [
   { value: "romantic", label: "Romantic Partner", icon: "🌹" },
@@ -368,12 +369,20 @@ export function CompatibilityLab() {
               <span>This reading has been saved to your compatibility history.</span>
             </motion.div>
 
-            <button
-              onClick={reset}
-              className="w-full py-3 rounded-xl border border-white/[0.06] text-sm text-muted-foreground hover:text-foreground hover:border-gold/20 transition-all"
-            >
-              Read another connection
-            </button>
+            <div className="flex items-center gap-3">
+              <ShareToFeed
+                content={response.slice(0, 500)}
+                postType="compatibility"
+                label="Share to Collective"
+                className="flex-1 text-center"
+              />
+              <button
+                onClick={reset}
+                className="flex-1 py-3 rounded-xl border border-white/[0.06] text-sm text-muted-foreground hover:text-foreground hover:border-gold/20 transition-all"
+              >
+                Read another connection
+              </button>
+            </div>
           </motion.div>
         )}
 
