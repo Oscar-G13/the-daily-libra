@@ -179,15 +179,44 @@ function AvatarUpload({
   );
 }
 
+interface LeaderboardEntry {
+  display_name: string | null;
+  avatar_url: string | null;
+  referral_code: string | null;
+  referral_count: number;
+}
+
 function InviteSection({ referralCode, referralCount }: { referralCode: string; referralCount: number }) {
   const [copied, setCopied] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://thedailylibra.com";
   const inviteUrl = `${baseUrl}/join/${referralCode}`;
+
+  useEffect(() => {
+    fetch("/api/referral/leaderboard")
+      .then((r) => r.json())
+      .then((d) => setLeaderboard(d.leaderboard ?? []))
+      .catch(() => {});
+  }, []);
 
   function copyLink() {
     navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function shareLink() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Join me on The Daily Libra",
+          text: "An AI-powered astrology app built exclusively for Libras. Join me here:",
+          url: inviteUrl,
+        });
+        return;
+      } catch { /* fallback */ }
+    }
+    copyLink();
   }
 
   return (
@@ -210,12 +239,40 @@ function InviteSection({ referralCode, referralCount }: { referralCode: string; 
           onClick={copyLink}
           className="px-4 py-2.5 rounded-lg border border-white/[0.08] text-sm text-muted-foreground hover:text-gold/80 hover:border-gold/20 transition-all"
         >
-          {copied ? "Copied ✓" : "Copy"}
+          {copied ? "✓" : "Copy"}
+        </button>
+        <button
+          onClick={shareLink}
+          className="px-4 py-2.5 rounded-lg bg-gold/[0.08] border border-gold/20 text-sm text-gold/70 hover:bg-gold/[0.15] transition-all"
+        >
+          Share
         </button>
       </div>
       <p className="text-xs text-muted-foreground/40">
-        Anyone who signs up through your link appears in your Invited network.
+        Anyone who signs up through your link is tracked to you. Grow your network.
       </p>
+
+      {/* Leaderboard */}
+      {leaderboard.length > 0 && (
+        <div className="pt-3 border-t border-white/[0.04] space-y-2">
+          <p className="text-xs text-muted-foreground/40 uppercase tracking-widest">Top Inviters</p>
+          {leaderboard.slice(0, 5).map((entry, i) => (
+            <div key={i} className="flex items-center gap-2.5">
+              <span className="text-xs text-muted-foreground/30 w-4">{i + 1}</span>
+              {entry.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={entry.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover border border-white/[0.08]" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gold/[0.08] border border-gold/15 flex items-center justify-center text-[10px]">♎</div>
+              )}
+              <p className="text-xs text-foreground/70 flex-1 truncate">
+                {entry.display_name ?? "Anonymous Libra"}
+              </p>
+              <span className="text-xs text-gold/50">{entry.referral_count} invited</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
