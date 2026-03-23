@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useGamification } from "@/components/gamification/provider";
+import { ShareToFeed } from "@/components/feed/share-to-feed";
 import type { GamificationResult } from "@/types";
 
 function ShareReadingButton({ text }: { text: string }) {
@@ -175,6 +176,8 @@ export function DailyReadingCard({
           </a>
           <span className="text-white/10">|</span>
           <ShareReadingButton text={reading} />
+          <span className="text-white/10">|</span>
+          <ShareToFeed content={reading} postType="reading" label="Share to Collective" />
         </div>
       )}
     </div>
