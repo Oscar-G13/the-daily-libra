@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { TraitMapVisual } from "./trait-map-visual";
+import { RadarChart } from "./radar-chart";
 import { PsycheGlobe } from "./psyche-globe";
 import type { ProfileSummary, TraitScore } from "@/types/assessment";
 
@@ -205,7 +205,7 @@ export function RevealCeremony({ profile, traitScores }: RevealCeremonyProps) {
                   <h2 className="font-serif text-xl text-foreground">24 Dimensions</h2>
                 </div>
 
-                <TraitMapVisual traitScores={traitScores} />
+                <RadarChart traitScores={traitScores} />
 
                 <button
                   onClick={() => setStage("cta")}
