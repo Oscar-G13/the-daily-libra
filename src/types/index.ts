@@ -202,3 +202,53 @@ export interface QuizResult {
   secondaryModifier: ArchetypeModifier;
   scores: Record<LibraArchetype, number>;
 }
+
+// ─── Gamification ─────────────────────────────────────────────────────────────
+
+export type XPAction = "reading" | "journal" | "mood" | "companion" | "ritual" | "streak_bonus";
+export type TrophyTier = "bronze" | "silver" | "gold" | "platinum";
+
+export interface AchievementDef {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+  category: "explorer" | "ritual" | "emotional" | "cosmic" | "libra";
+}
+
+export interface AchievementStatus extends AchievementDef {
+  unlocked: boolean;
+  earnedAt?: string;
+  progress?: { current: number; required: number };
+}
+
+export interface TrophyTierDef {
+  tier: TrophyTier;
+  threshold: number;
+  label: string;
+}
+
+export interface TrophyDef {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+  tiers: TrophyTierDef[];
+}
+
+export interface TrophyStatus extends TrophyDef {
+  earnedTier?: TrophyTier;
+  progress: number;
+  nextTierThreshold: number;
+  nextTier?: TrophyTier;
+}
+
+export interface GamificationResult {
+  xpAwarded: number;
+  newTotal: number;
+  levelBefore: number;
+  levelAfter: number;
+  leveledUp: boolean;
+  newAchievements: AchievementStatus[];
+  newTrophies: { trophy: TrophyDef; tier: TrophyTier }[];
+}

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useGamification } from "@/components/gamification/provider";
+import type { GamificationResult } from "@/types";
 
 interface DailyReadingCardProps {
   userId: string;
@@ -25,6 +27,7 @@ export function DailyReadingCard({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { handleGamificationResult } = useGamification();
 
   async function generateReading() {
     setLoading(true);
@@ -54,6 +57,16 @@ export function DailyReadingCard({
         const chunk = decoder.decode(value, { stream: true });
         setReading((prev) => (prev ?? "") + chunk);
       }
+
+      // Award XP after successful reading
+      fetch("/api/gamification/award", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reading" }),
+      })
+        .then((r) => r.json())
+        .then((data: GamificationResult) => handleGamificationResult(data))
+        .catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate reading");
     } finally {

@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { READING_CATEGORY_LABELS, TONE_LABELS } from "@/types";
-import type { ReadingCategory, ReadingTone } from "@/types";
+import type { ReadingCategory, ReadingTone, GamificationResult } from "@/types";
 import { getReadingEmoji, cn } from "@/lib/utils";
+import { useGamification } from "@/components/gamification/provider";
 
 const FREE_CATEGORIES: ReadingCategory[] = ["daily"];
 const ALL_CATEGORIES: ReadingCategory[] = [
@@ -27,6 +28,7 @@ interface ReadingHubProps {
 }
 
 export function ReadingHub({ isPremium, defaultTone }: ReadingHubProps) {
+  const { handleGamificationResult } = useGamification();
   const [selectedCategory, setSelectedCategory] = useState<ReadingCategory>("daily");
   const [selectedTone, setSelectedTone] = useState<ReadingTone>(
     (defaultTone as ReadingTone) ?? "gentle"
@@ -66,6 +68,16 @@ export function ReadingHub({ isPremium, defaultTone }: ReadingHubProps) {
         if (done) break;
         setReading((prev) => (prev ?? "") + decoder.decode(value, { stream: true }));
       }
+
+      // Award XP after successful reading
+      fetch("/api/gamification/award", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reading" }),
+      })
+        .then((r) => r.json())
+        .then((data: GamificationResult) => handleGamificationResult(data))
+        .catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
     } finally {

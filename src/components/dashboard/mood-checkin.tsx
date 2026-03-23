@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useGamification } from "@/components/gamification/provider";
+import type { GamificationResult } from "@/types";
 
 const MOODS = [
   { value: 10, label: "Radiant", emoji: "✨" },
@@ -22,18 +24,23 @@ export function MoodCheckin({ userId: _userId, todaysMood }: MoodCheckinProps) {
     todaysMood ? (todaysMood.mood_score as number) : null
   );
   const [saving, setSaving] = useState(false);
+  const { handleGamificationResult } = useGamification();
 
   async function saveMood(score: number) {
     setSelected(score);
     setSaving(true);
 
     try {
-      await fetch("/api/mood", {
+      const res = await fetch("/api/mood", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mood_score: score }),
       });
+      const data = await res.json();
       setSaved(true);
+      if (data.gamification) {
+        handleGamificationResult(data.gamification as GamificationResult);
+      }
     } catch {
       // silently fail
     } finally {

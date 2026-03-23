@@ -13,8 +13,11 @@ import { TraitPulseCard } from "@/components/dashboard/trait-pulse-card";
 import { StreakCard } from "@/components/dashboard/streak-card";
 import { AchievementsStrip } from "@/components/dashboard/achievements-strip";
 import { ReadingHistoryStrip } from "@/components/dashboard/reading-history-strip";
+import { CosmicRankCard } from "@/components/gamification/cosmic-rank-card";
 import { formatDate } from "@/lib/utils";
-import type { NatalChart } from "@/types";
+import { computeAchievements } from "@/lib/gamification/achievements";
+import { computeAllTrophies, TROPHIES } from "@/lib/gamification/trophies";
+import type { NatalChart, TrophyTier } from "@/types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -43,10 +46,15 @@ export default async function DashboardPage() {
     { data: aiMemory },
     { data: journalDates },
     { data: recentReadings },
+    { data: allReadings },
+    { data: earnedAchievementsRows },
+    { data: earnedTrophyRows },
   ] = await Promise.all([
     supabase
       .from("users")
-      .select("display_name, tone_preference, subscription_tier, app_streak, last_active_date")
+      .select(
+        "display_name, tone_preference, subscription_tier, app_streak, last_active_date, xp_total, xp_level, weekly_xp, weekly_xp_best"
+      )
       .eq("id", user!.id)
       .single(),
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user!.id).single(),
@@ -107,19 +115,96 @@ export default async function DashboardPage() {
       .eq("user_id", user!.id)
       .order("reading_date", { ascending: false })
       .limit(8),
+    supabase.from("daily_readings").select("category, tone").eq("user_id", user!.id),
+    supabase.from("user_achievements").select("achievement_id, earned_at").eq("user_id", user!.id),
+    supabase.from("user_trophies").select("trophy_id, tier").eq("user_id", user!.id),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
   const appStreak = userData?.app_streak ?? 0;
 
+  // ── Gamification ────────────────────────────────────────────────────────────
+  const categoriesUsed = [...new Set((allReadings ?? []).map((r) => r.category))];
+  const tonesUsed = [...new Set((allReadings ?? []).map((r) => r.tone).filter(Boolean))];
+  const existingAchievementIds = (earnedAchievementsRows ?? []).map((a) => a.achievement_id);
+
+  const earnedTierMap: Record<string, TrophyTier[]> = {};
+  for (const row of earnedTrophyRows ?? []) {
+    const r = row as { trophy_id: string; tier: TrophyTier };
+    if (!earnedTierMap[r.trophy_id]) earnedTierMap[r.trophy_id] = [];
+    earnedTierMap[r.trophy_id].push(r.tier);
+  }
+
+  // Journal + mood sync days
+  const journalDaySet = new Set((journalDates ?? []).map((j) => j.created_at.split("T")[0]));
+  const moodDaySet = new Set((moodLogs ?? []).map((l) => l.log_date));
+  const soulSyncDays = [...journalDaySet].filter((d) => moodDaySet.has(d)).length;
+  const moodScoresLogged = [...new Set((moodLogs ?? []).map((m) => m.mood_score).filter(Boolean))];
+  const xpLevel = userData?.xp_level ?? 1;
+  const xpTotal = userData?.xp_total ?? 0;
+  const weeklyXP = userData?.weekly_xp ?? 0;
+  const weeklyXPBest = userData?.weekly_xp_best ?? 0;
+
+  const computedAchievements = computeAchievements({
+    readingCount: readingCount ?? 0,
+    journalCount: journalCount ?? 0,
+    moodLogDays: moodDayCount ?? 0,
+    appStreak,
+    hasCompanionMessages: (aiMemory?.length ?? 0) > 0,
+    companionMessageCount: aiMemory?.length ?? 0,
+    hasBirthChart: !!birthProfile,
+    onboardingComplete: true,
+    assessmentComplete: !!assessmentProfile,
+    archetypeKnown: !!libraProfile?.primary_archetype,
+    categoriesUsed,
+    tonesUsed,
+    moodScoresLogged,
+    moodLogTotal: moodDayCount ?? 0,
+    hasShadowReading: categoriesUsed.includes("shadow"),
+    hasWeeklyReading: categoriesUsed.includes("weekly"),
+    hasMonthlyReading: categoriesUsed.includes("monthly"),
+    soulSyncDays,
+    xpLevel,
+    unlockedAchievementIds: existingAchievementIds,
+  });
+
+  const allAchievementsUnlocked = existingAchievementIds.length >= 30;
+  const computedTrophies = computeAllTrophies(
+    {
+      readingCount: readingCount ?? 0,
+      shadowReadingCount: (allReadings ?? []).filter((r) => r.category === "shadow").length,
+      loveReadingCount: (allReadings ?? []).filter((r) => r.category === "love").length,
+      careerReadingCount: (allReadings ?? []).filter((r) => r.category === "career").length,
+      healingReadingCount: (allReadings ?? []).filter((r) => r.category === "healing").length,
+      journalCount: journalCount ?? 0,
+      moodLogTotal: moodDayCount ?? 0,
+      appStreak,
+      appDaysActive: moodDayCount ?? 0,
+      companionMessageCount: aiMemory?.length ?? 0,
+      chartViewCount: 0,
+      xpLevel,
+      xpTotal,
+      weeklyXP,
+      categoriesUsed,
+      tonesUsed,
+      soulSyncDays,
+      weeklyXPBest,
+      allAchievementsUnlocked,
+      isCosmicAligned: xpLevel >= 10 && appStreak >= 7 && (readingCount ?? 0) >= 30,
+    },
+    earnedTierMap
+  );
+
+  const trophyCount = [...new Set((earnedTrophyRows ?? []).map((r) => r.trophy_id))].length;
+
   // Compute journal streak from recent entries
   const journalStreak = (() => {
     if (!journalDates || journalDates.length === 0) return 0;
-    const dates = Array.from(
-      new Set(journalDates.map((j) => j.created_at.split("T")[0])),
-    ).sort((a, b) => b.localeCompare(a));
+    const dates = Array.from(new Set(journalDates.map((j) => j.created_at.split("T")[0]))).sort(
+      (a, b) => b.localeCompare(a)
+    );
     let streak = 0;
-    let cursor = new Date();
+    const cursor = new Date();
     cursor.setHours(0, 0, 0, 0);
     for (const d of dates) {
       const curStr = cursor.toISOString().split("T")[0];
@@ -190,6 +275,17 @@ export default async function DashboardPage() {
         <RitualCard userId={user!.id} />
       </div>
 
+      {/* Cosmic Rank */}
+      <CosmicRankCard
+        initialXP={xpTotal}
+        initialLevel={xpLevel}
+        weeklyXP={weeklyXP}
+        weeklyXPBest={weeklyXPBest}
+        appStreak={appStreak}
+        trophyCount={trophyCount}
+        totalTrophies={TROPHIES.length}
+      />
+
       {/* Archetype card (shown when assessment done) */}
       {topTraits && topTraits.length > 0 && (
         <ArchetypeCard
@@ -201,16 +297,8 @@ export default async function DashboardPage() {
       {/* Reading history */}
       <ReadingHistoryStrip readings={recentReadings ?? []} />
 
-      {/* Achievements */}
-      <AchievementsStrip
-        readingCount={readingCount ?? 0}
-        assessmentComplete={!!assessmentProfile}
-        journalCount={journalCount ?? 0}
-        moodLogDays={moodDayCount ?? 0}
-        hasCompanionMessages={(aiMemory?.length ?? 0) > 0}
-        hasBirthChart={!!birthProfile}
-        onboardingComplete={true}
-      />
+      {/* Achievements + Trophies */}
+      <AchievementsStrip achievements={computedAchievements} trophies={computedTrophies} />
 
       {/* Assessment CTA or profile card */}
       {assessmentProfile ? (

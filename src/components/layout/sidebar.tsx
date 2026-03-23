@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { XPBar } from "@/components/gamification/xp-bar";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: "☀️" },
@@ -20,9 +21,16 @@ const NAV_ITEMS = [
 interface DashboardSidebarProps {
   displayName: string;
   tier: string;
+  initialXP?: number;
+  initialLevel?: number;
 }
 
-export function DashboardSidebar({ displayName, tier }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  displayName,
+  tier,
+  initialXP = 0,
+  initialLevel = 1,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -50,6 +58,9 @@ export function DashboardSidebar({ displayName, tier }: DashboardSidebarProps) {
           {tier === "premium" ? "✦ Premium" : "Free"}
         </span>
       </div>
+
+      {/* XP Bar */}
+      <XPBar initialXP={initialXP} initialLevel={initialLevel} />
 
       {/* Nav */}
       <nav className="flex-1 p-4 space-y-1">

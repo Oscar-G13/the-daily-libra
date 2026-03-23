@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardSidebar } from "@/components/layout/sidebar";
 import { DashboardNav } from "@/components/layout/dashboard-nav";
+import { GamificationProvider } from "@/components/gamification/provider";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -16,7 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Redirect to onboarding if not completed
   const { data: profile } = await supabase
     .from("users")
-    .select("onboarding_completed, display_name, subscription_tier")
+    .select("onboarding_completed, display_name, subscription_tier, xp_total, xp_level")
     .eq("id", user.id)
     .single();
 
@@ -49,18 +50,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
   })();
 
   return (
-    <div className="min-h-screen bg-obsidian flex">
-      {/* Sidebar */}
-      <DashboardSidebar
-        displayName={profile?.display_name ?? ""}
-        tier={profile?.subscription_tier ?? "free"}
-      />
+    <GamificationProvider initialXP={profile?.xp_total ?? 0} initialLevel={profile?.xp_level ?? 1}>
+      <div className="min-h-screen bg-obsidian flex">
+        {/* Sidebar */}
+        <DashboardSidebar
+          displayName={profile?.display_name ?? ""}
+          tier={profile?.subscription_tier ?? "free"}
+          initialXP={profile?.xp_total ?? 0}
+          initialLevel={profile?.xp_level ?? 1}
+        />
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen ml-0 md:ml-64">
-        <DashboardNav />
-        <main className="flex-1 px-4 sm:px-6 py-6">{children}</main>
+        {/* Main content */}
+        <div className="flex-1 flex flex-col min-h-screen ml-0 md:ml-64">
+          <DashboardNav />
+          <main className="flex-1 px-4 sm:px-6 py-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </GamificationProvider>
   );
 }

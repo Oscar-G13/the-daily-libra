@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatShortDate } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
+import { useGamification } from "@/components/gamification/provider";
+import type { GamificationResult } from "@/types";
 
 const MOOD_TAGS = [
   "grounded",
@@ -40,6 +42,7 @@ export function JournalView({ initialEntries, isPremium }: JournalViewProps) {
   const [body, setBody] = useState("");
   const [moodTag, setMoodTag] = useState("");
   const [saving, setSaving] = useState(false);
+  const { handleGamificationResult } = useGamification();
 
   const freeLimitReached = !isPremium && entries.length >= 3;
 
@@ -61,6 +64,9 @@ export function JournalView({ initialEntries, isPremium }: JournalViewProps) {
         setTitle("");
         setBody("");
         setMoodTag("");
+        if (data.gamification) {
+          handleGamificationResult(data.gamification as GamificationResult);
+        }
       }
     } catch {
       // handle error

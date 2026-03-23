@@ -98,17 +98,20 @@ export async function POST(req: NextRequest) {
   let stream;
   try {
     stream = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    max_tokens: 600,
-    temperature: 0.85,
-    stream: true,
-  });
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      max_tokens: 600,
+      temperature: 0.85,
+      stream: true,
+    });
   } catch {
-    return NextResponse.json({ error: "AI service unavailable. Please try again." }, { status: 503 });
+    return NextResponse.json(
+      { error: "AI service unavailable. Please try again." },
+      { status: 503 }
+    );
   }
 
   let fullText = "";
@@ -130,9 +133,11 @@ export async function POST(req: NextRequest) {
           output_text: fullText,
           prompt_context_json: { archetype: libraProfile.primary_archetype, chart: chart },
         });
+
+        // XP awarded client-side via /api/gamification/award after stream completes
       } catch {
         controller.enqueue(
-          new TextEncoder().encode("\n\n[Something went wrong. Please try again.]"),
+          new TextEncoder().encode("\n\n[Something went wrong. Please try again.]")
         );
       } finally {
         controller.close();

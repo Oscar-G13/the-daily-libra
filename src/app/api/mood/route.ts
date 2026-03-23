@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { awardXP } from "@/lib/gamification/engine";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -32,7 +33,8 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ log: data });
+  const gamification = await awardXP(user.id, "mood", supabase).catch(() => null);
+  return NextResponse.json({ log: data, gamification });
 }
 
 export async function GET(req: NextRequest) {
