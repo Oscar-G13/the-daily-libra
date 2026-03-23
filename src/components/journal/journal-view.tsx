@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatShortDate } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
 import { useGamification } from "@/components/gamification/provider";
+import { ShareToFeed } from "@/components/feed/share-to-feed";
 import type { GamificationResult } from "@/types";
 import { JournalPrompts } from "@/components/journal/journal-prompts";
 
@@ -212,6 +213,13 @@ export function JournalView({ initialEntries, isPremium }: JournalViewProps) {
               </div>
             </div>
             <p className="text-sm text-foreground/75 leading-relaxed line-clamp-3">{entry.body}</p>
+            <div className="mt-3 pt-3 border-t border-white/[0.04]">
+              <ShareToFeed
+                content={entry.body.slice(0, 500)}
+                postType="reflection"
+                label="Share to Collective"
+              />
+            </div>
           </motion.div>
         ))}
       </div>

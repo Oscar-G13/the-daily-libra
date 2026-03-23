@@ -39,11 +39,40 @@ export default async function ProfilePage() {
   const archetypeData = archetype ? ARCHETYPE_DESCRIPTIONS[archetype] : null;
   const aestheticProfile = aestheticStyle ? AESTHETIC_PROFILES[aestheticStyle] : null;
 
+  const avatarUrl = (userData as any)?.avatar_url as string | null;
+  const bio = (userData as any)?.profile_bio as string | null;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="mb-2">
-        <h1 className="font-serif text-display-xs text-foreground">My Libra Profile</h1>
-        <p className="text-sm text-muted-foreground mt-1">Your evolving identity map.</p>
+      {/* Identity header */}
+      <div className="flex items-center gap-5">
+        <div className="shrink-0">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt={userData?.display_name ?? ""}
+              className="w-16 h-16 rounded-full object-cover border-2 border-gold/20"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-gold/[0.06] border-2 border-gold/15 flex items-center justify-center text-2xl">
+              ♎
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <h1 className="font-serif text-display-xs text-foreground">
+            {userData?.display_name ?? "My Libra Profile"}
+          </h1>
+          {bio ? (
+            <p className="text-sm text-muted-foreground/70 mt-1 leading-relaxed">{bio}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground mt-1">Your evolving identity map.</p>
+          )}
+          <Link href="/settings" className="text-xs text-muted-foreground/30 hover:text-gold/50 transition-colors mt-1 inline-block">
+            Edit profile →
+          </Link>
+        </div>
       </div>
 
       {/* Invited by badge */}
