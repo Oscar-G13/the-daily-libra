@@ -18,7 +18,8 @@ function getMoonPhase(date: Date): { phase: number; name: string; emoji: string;
   if (phase < 0.03 || phase >= 0.97) {
     name = "New Moon";
     emoji = "🌑";
-    libra = "Set intentions. The slate is clean — a perfect time to journal what you want to attract.";
+    libra =
+      "Set intentions. The slate is clean — a perfect time to journal what you want to attract.";
   } else if (phase < 0.22) {
     name = "Waxing Crescent";
     emoji = "🌒";
@@ -57,7 +58,7 @@ function daysUntilNextPhase(date: Date, targetFrac: number): number {
   const knownNew = new Date("2000-01-06T18:14:00Z");
   const synodicPeriod = 29.53058867;
   const elapsed = (date.getTime() - knownNew.getTime()) / (1000 * 60 * 60 * 24);
-  const currentFrac = ((elapsed / synodicPeriod) % 1 + 1) % 1;
+  const currentFrac = (((elapsed / synodicPeriod) % 1) + 1) % 1;
   let diff = targetFrac - currentFrac;
   if (diff <= 0) diff += 1;
   return Math.round(diff * synodicPeriod);
@@ -96,13 +97,7 @@ function MoonSVG({ phase }: { phase: number }) {
           <rect x={0} y={0} width={cx} height={size} fill="rgba(196,160,90,0.7)" />
         )}
         {/* Ellipse shadow over lit half to create crescent */}
-        <ellipse
-          cx={cx}
-          cy={cx}
-          rx={termX}
-          ry={r}
-          fill="rgba(13,13,20,0.92)"
-        />
+        <ellipse cx={cx} cy={cx} rx={termX} ry={r} fill="rgba(13,13,20,0.92)" />
       </g>
       {/* Rim glow */}
       <circle cx={cx} cy={cx} r={r} fill="none" stroke="rgba(196,160,90,0.2)" strokeWidth="1" />
@@ -111,7 +106,7 @@ function MoonSVG({ phase }: { phase: number }) {
 }
 
 export function MoonPhaseCard() {
-  const { phase, name, emoji: _emoji, libra } = useMemo(() => getMoonPhase(new Date()), []);
+  const { phase, name, libra } = useMemo(() => getMoonPhase(new Date()), []);
   const daysToFull = useMemo(() => daysUntilNextPhase(new Date(), 0.5), []);
   const daysToNew = useMemo(() => daysUntilNextPhase(new Date(), 0), []);
 

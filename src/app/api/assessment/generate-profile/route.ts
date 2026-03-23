@@ -70,7 +70,10 @@ export async function POST(req: NextRequest) {
       ],
     });
   } catch {
-    return NextResponse.json({ error: "AI service unavailable. Please try again." }, { status: 503 });
+    return NextResponse.json(
+      { error: "AI service unavailable. Please try again." },
+      { status: 503 }
+    );
   }
 
   const rawContent = completion.choices[0]?.message?.content ?? "{}";

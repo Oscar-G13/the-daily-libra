@@ -70,9 +70,7 @@ export function ReadingHistoryStrip({ readings }: ReadingHistoryStripProps) {
               className="flex-shrink-0 w-52 glass-card p-4 space-y-2 cursor-default"
             >
               <div className="flex items-center justify-between">
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full border ${colorClass}`}
-                >
+                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${colorClass}`}>
                   {label}
                 </span>
                 <span className="text-[10px] text-muted-foreground">

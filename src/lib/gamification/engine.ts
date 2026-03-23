@@ -100,15 +100,19 @@ export async function awardXP(
     supabase.from("mood_logs").select("log_date").eq("user_id", userId),
   ]);
 
-  const categoriesUsed = [
-    ...new Set((readings ?? []).map((r: { category: string }) => r.category)),
-  ];
-  const tonesUsed = [
-    ...new Set((readings ?? []).map((r: { tone: string }) => r.tone).filter(Boolean)),
-  ];
-  const moodScoresLogged = [
-    ...new Set((moodLogs ?? []).map((m: { mood_score: number }) => m.mood_score).filter(Boolean)),
-  ];
+  const categoriesUsed = Array.from(
+    new Set((readings ?? []).map((r: { category: string }) => r.category))
+  );
+  const tonesUsed = Array.from(
+    new Set((readings ?? []).map((r: { tone: string }) => r.tone).filter(Boolean))
+  );
+  const moodScoresLogged = Array.from(
+    new Set(
+      (moodLogs ?? [])
+        .map((m: { mood_score: number }) => m.mood_score)
+        .filter((v): v is number => v != null)
+    )
+  );
   const existingAchievementIds = (earnedAchievements ?? []).map(
     (a: { achievement_id: string }) => a.achievement_id
   );
@@ -118,7 +122,7 @@ export async function awardXP(
     (journalDates ?? []).map((j: { created_at: string }) => j.created_at.split("T")[0])
   );
   const moodDaySet = new Set((moodDates ?? []).map((m: { log_date: string }) => m.log_date));
-  const soulSyncDays = [...journalDaySet].filter((d) => moodDaySet.has(d)).length;
+  const soulSyncDays = Array.from(journalDaySet).filter((d) => moodDaySet.has(d)).length;
 
   // Unique mood log days
   const moodLogDays = moodDaySet.size;

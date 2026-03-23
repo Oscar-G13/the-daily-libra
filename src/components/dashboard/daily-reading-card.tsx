@@ -6,6 +6,34 @@ import { cn } from "@/lib/utils";
 import { useGamification } from "@/components/gamification/provider";
 import type { GamificationResult } from "@/types";
 
+function ShareReadingButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const excerpt = text.slice(0, 180).replace(/\n/g, " ");
+
+  async function handleShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "My Daily Libra Reading", text: excerpt + "..." });
+        return;
+      } catch {
+        // fallback
+      }
+    }
+    await navigator.clipboard.writeText(excerpt + "... — thedailylibra.com");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      className="text-xs text-muted-foreground hover:text-gold/80 transition-colors"
+    >
+      {copied ? "✓ Copied!" : "✦ Share"}
+    </button>
+  );
+}
+
 interface DailyReadingCardProps {
   userId: string;
   tone: string;
@@ -145,6 +173,8 @@ export function DailyReadingCard({
           <a href="/reading" className="text-xs text-gold/60 hover:text-gold transition-colors">
             More readings →
           </a>
+          <span className="text-white/10">|</span>
+          <ShareReadingButton text={reading} />
         </div>
       )}
     </div>

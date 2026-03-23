@@ -51,7 +51,10 @@ function Sparkline({ values }: { values: (number | null)[] }) {
       />
       {/* End dot */}
       {(() => {
-        const lastIdx = values.map((v, i) => (v !== null ? i : -1)).filter((i) => i >= 0).pop();
+        const lastIdx = values
+          .map((v, i) => (v !== null ? i : -1))
+          .filter((i) => i >= 0)
+          .pop();
         if (lastIdx === undefined) return null;
         const v = values[lastIdx]!;
         const x = lastIdx * step;

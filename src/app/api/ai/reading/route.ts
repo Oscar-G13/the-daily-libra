@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { buildReadingSystemPrompt, buildReadingUserPrompt } from "@/lib/openai/prompts/reading";
+import { getCurrentTransits, formatTransitsForPrompt } from "@/lib/astrology/transits";
 import type { ReadingCategory, ReadingTone, LibraArchetype, ArchetypeModifier } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -69,7 +70,10 @@ export async function POST(req: NextRequest) {
   const chart = birthProfile.natal_chart_json as Record<string, { sign: string }> | null;
   const tone: ReadingTone = toneOverride ?? (userData.tone_preference as ReadingTone) ?? "gentle";
 
-  const systemPrompt = buildReadingSystemPrompt({
+  const transits = getCurrentTransits();
+  const transitContext = formatTransitsForPrompt(transits);
+
+  const baseSystemPrompt = buildReadingSystemPrompt({
     displayName: userData.display_name ?? "Libra",
     archetype: libraProfile.primary_archetype as LibraArchetype,
     modifier: libraProfile.secondary_modifier as ArchetypeModifier | undefined,
@@ -89,6 +93,8 @@ export async function POST(req: NextRequest) {
       day: "numeric",
     }),
   });
+
+  const systemPrompt = `${baseSystemPrompt}\n\nLIVE PLANETARY DATA (use this to ground the reading in actual sky conditions):\n${transitContext}`;
 
   const userPrompt = buildReadingUserPrompt(category, userNote);
 

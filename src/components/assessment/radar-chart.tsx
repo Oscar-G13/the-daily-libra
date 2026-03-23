@@ -149,7 +149,7 @@ export function RadarChart({ traitScores }: RadarChartProps) {
         if (vals.length === 0) return 0;
         return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
       }),
-    [traitScores],
+    [traitScores]
   );
 
   const activeAxis = AXES[activeIdx];
@@ -187,7 +187,12 @@ export function RadarChart({ traitScores }: RadarChartProps) {
           })}
 
           {/* Data polygon — animates from center outward */}
-          <motion.g style={{ transformOrigin: `${CX}px ${CY}px` }} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}>
+          <motion.g
+            style={{ transformOrigin: `${CX}px ${CY}px` }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
+          >
             <polygon
               points={polygonPoints(categoryScores)}
               fill="rgba(196,160,90,0.12)"

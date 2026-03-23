@@ -15,11 +15,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   // Redirect to onboarding if not completed
-  const { data: profile } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const profileResult = (await (supabase as any)
     .from("users")
     .select("onboarding_completed, display_name, subscription_tier, xp_total, xp_level")
     .eq("id", user.id)
-    .single();
+    .single()) as {
+    data: {
+      onboarding_completed: boolean | null;
+      display_name: string | null;
+      subscription_tier: string | null;
+      xp_total: number | null;
+      xp_level: number | null;
+    } | null;
+  };
+  const profile = profileResult.data;
 
   if (!profile?.onboarding_completed) {
     redirect("/onboarding");

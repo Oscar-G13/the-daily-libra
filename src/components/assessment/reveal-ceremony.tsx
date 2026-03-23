@@ -45,11 +45,7 @@ export function RevealCeremony({ profile, traitScores }: RevealCeremonyProps) {
     setTimeout(() => router.push("/dashboard"), 900);
   };
 
-  const clipPath = exploding
-    ? CLIP.explode
-    : stage === "archetype"
-      ? CLIP.full
-      : CLIP.corner;
+  const clipPath = exploding ? CLIP.explode : stage === "archetype" ? CLIP.full : CLIP.corner;
 
   return (
     <div className="relative min-h-screen overflow-hidden">

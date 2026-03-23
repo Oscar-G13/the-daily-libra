@@ -6,6 +6,7 @@ import { formatShortDate } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
 import { useGamification } from "@/components/gamification/provider";
 import type { GamificationResult } from "@/types";
+import { JournalPrompts } from "@/components/journal/journal-prompts";
 
 const MOOD_TAGS = [
   "grounded",
@@ -128,12 +129,16 @@ export function JournalView({ initialEntries, isPremium }: JournalViewProps) {
               className="w-full px-0 py-2 bg-transparent border-b border-white/[0.06] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-gold/30 transition-colors text-sm mb-4"
             />
 
+            <JournalPrompts
+              onSelect={(prompt) => setBody(body ? `${prompt}\n\n${body}` : prompt)}
+            />
+
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder="What's on your mind..."
               rows={6}
-              className="w-full px-0 py-2 bg-transparent text-foreground placeholder:text-muted-foreground/40 focus:outline-none resize-none text-sm leading-relaxed"
+              className="w-full px-0 py-2 bg-transparent text-foreground placeholder:text-muted-foreground/40 focus:outline-none resize-none text-sm leading-relaxed mt-3"
             />
 
             {/* Mood tags */}

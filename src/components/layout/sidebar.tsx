@@ -10,11 +10,13 @@ import { XPBar } from "@/components/gamification/xp-bar";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: "☀️" },
   { href: "/reading", label: "Readings", icon: "🔮" },
+  { href: "/decision", label: "Decision Decoder", icon: "⚖" },
+  { href: "/moon", label: "Moon Calendar", icon: "🌙" },
   { href: "/profile", label: "My Profile", icon: "♎" },
-  { href: "/chart", label: "Birth Chart", icon: "🌙" },
+  { href: "/chart", label: "Birth Chart", icon: "✦" },
   { href: "/companion", label: "AI Companion", icon: "🪞" },
   { href: "/journal", label: "Journal", icon: "📖" },
-  { href: "/subscription", label: "Premium", icon: "✦" },
+  { href: "/subscription", label: "Premium", icon: "💎" },
   { href: "/settings", label: "Settings", icon: "⚙️" },
 ];
 

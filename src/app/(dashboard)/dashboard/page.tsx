@@ -14,10 +14,17 @@ import { StreakCard } from "@/components/dashboard/streak-card";
 import { AchievementsStrip } from "@/components/dashboard/achievements-strip";
 import { ReadingHistoryStrip } from "@/components/dashboard/reading-history-strip";
 import { CosmicRankCard } from "@/components/gamification/cosmic-rank-card";
+import { CosmicWeatherCard } from "@/components/dashboard/cosmic-weather-card";
+import { HarmonyScoreCard } from "@/components/dashboard/harmony-score-card";
+import { VenusTrackerCard } from "@/components/dashboard/venus-tracker-card";
 import { formatDate } from "@/lib/utils";
 import { computeAchievements } from "@/lib/gamification/achievements";
 import { computeAllTrophies, TROPHIES } from "@/lib/gamification/trophies";
+import { getCurrentTransits } from "@/lib/astrology/transits";
+import { computeHarmonyScore } from "@/lib/astrology/harmony";
+import { getVenusStatus, getVenusHouseInsight } from "@/lib/astrology/venus";
 import type { NatalChart, TrophyTier } from "@/types";
+import type { ZodiacSign } from "@/lib/astrology/transits";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -50,13 +57,26 @@ export default async function DashboardPage() {
     { data: earnedAchievementsRows },
     { data: earnedTrophyRows },
   ] = await Promise.all([
-    supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
       .from("users")
       .select(
         "display_name, tone_preference, subscription_tier, app_streak, last_active_date, xp_total, xp_level, weekly_xp, weekly_xp_best"
       )
       .eq("id", user!.id)
-      .single(),
+      .single() as Promise<{
+      data: {
+        display_name: string | null;
+        tone_preference: string | null;
+        subscription_tier: string | null;
+        app_streak: number | null;
+        last_active_date: string | null;
+        xp_total: number | null;
+        xp_level: number | null;
+        weekly_xp: number | null;
+        weekly_xp_best: number | null;
+      } | null;
+    }>,
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user!.id).single(),
     supabase.from("libra_profiles").select("*").eq("user_id", user!.id).single(),
     supabase
@@ -116,17 +136,26 @@ export default async function DashboardPage() {
       .order("reading_date", { ascending: false })
       .limit(8),
     supabase.from("daily_readings").select("category, tone").eq("user_id", user!.id),
-    supabase.from("user_achievements").select("achievement_id, earned_at").eq("user_id", user!.id),
-    supabase.from("user_trophies").select("trophy_id, tier").eq("user_id", user!.id),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("user_achievements")
+      .select("achievement_id, earned_at")
+      .eq("user_id", user!.id),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).from("user_trophies").select("trophy_id, tier").eq("user_id", user!.id),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
   const appStreak = userData?.app_streak ?? 0;
 
   // ── Gamification ────────────────────────────────────────────────────────────
-  const categoriesUsed = [...new Set((allReadings ?? []).map((r) => r.category))];
-  const tonesUsed = [...new Set((allReadings ?? []).map((r) => r.tone).filter(Boolean))];
-  const existingAchievementIds = (earnedAchievementsRows ?? []).map((a) => a.achievement_id);
+  const categoriesUsed = Array.from(new Set((allReadings ?? []).map((r) => r.category as string)));
+  const tonesUsed = Array.from(
+    new Set((allReadings ?? []).map((r) => r.tone as string).filter(Boolean))
+  );
+  const existingAchievementIds = (earnedAchievementsRows ?? []).map(
+    (a: { achievement_id: string }) => a.achievement_id
+  );
 
   const earnedTierMap: Record<string, TrophyTier[]> = {};
   for (const row of earnedTrophyRows ?? []) {
@@ -138,8 +167,10 @@ export default async function DashboardPage() {
   // Journal + mood sync days
   const journalDaySet = new Set((journalDates ?? []).map((j) => j.created_at.split("T")[0]));
   const moodDaySet = new Set((moodLogs ?? []).map((l) => l.log_date));
-  const soulSyncDays = [...journalDaySet].filter((d) => moodDaySet.has(d)).length;
-  const moodScoresLogged = [...new Set((moodLogs ?? []).map((m) => m.mood_score).filter(Boolean))];
+  const soulSyncDays = Array.from(journalDaySet).filter((d) => moodDaySet.has(d)).length;
+  const moodScoresLogged = Array.from(
+    new Set((moodLogs ?? []).map((m) => m.mood_score).filter((v): v is number => v != null))
+  );
   const xpLevel = userData?.xp_level ?? 1;
   const xpTotal = userData?.xp_total ?? 0;
   const weeklyXP = userData?.weekly_xp ?? 0;
@@ -195,7 +226,9 @@ export default async function DashboardPage() {
     earnedTierMap
   );
 
-  const trophyCount = [...new Set((earnedTrophyRows ?? []).map((r) => r.trophy_id))].length;
+  const trophyCount = Array.from(
+    new Set((earnedTrophyRows ?? []).map((r: { trophy_id: string }) => r.trophy_id))
+  ).length;
 
   // Compute journal streak from recent entries
   const journalStreak = (() => {
@@ -227,6 +260,42 @@ export default async function DashboardPage() {
       return d >= cutoff.toISOString().split("T")[0];
     });
 
+  // ── Astrology — Transits, Harmony, Venus ─────────────────────────────────
+  const transits = getCurrentTransits();
+  const todayMoodScore = todaysMood?.mood_score ?? null;
+  const harmony = computeHarmonyScore({
+    transits,
+    moodScore: todayMoodScore,
+    streak: appStreak,
+    archetype: libraProfile?.primary_archetype ?? null,
+  });
+
+  const natalVenusLong = (() => {
+    const venusSign = chart?.venus?.sign as ZodiacSign | undefined;
+    const venusDeg = (chart?.venus as { degree?: number })?.degree ?? 0;
+    if (!venusSign) return undefined;
+    const ZODIAC_ORDER = [
+      "Aries",
+      "Taurus",
+      "Gemini",
+      "Cancer",
+      "Leo",
+      "Virgo",
+      "Libra",
+      "Scorpio",
+      "Sagittarius",
+      "Capricorn",
+      "Aquarius",
+      "Pisces",
+    ];
+    const idx = ZODIAC_ORDER.indexOf(venusSign);
+    return idx >= 0 ? idx * 30 + venusDeg : undefined;
+  })();
+
+  const venus = getVenusStatus(natalVenusLong);
+  const ascendantSign = chart?.ascendant?.sign as ZodiacSign | undefined;
+  const houseInsight = ascendantSign ? getVenusHouseInsight(venus.sign, ascendantSign) : undefined;
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
@@ -252,6 +321,13 @@ export default async function DashboardPage() {
         <div>
           <MoonPhaseCard />
         </div>
+      </div>
+
+      {/* Cosmic Weather + Harmony + Venus */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <CosmicWeatherCard transits={transits} />
+        <HarmonyScoreCard harmony={harmony} />
+        <VenusTrackerCard venus={venus} houseInsight={houseInsight} />
       </div>
 
       {/* Traits + mood row */}

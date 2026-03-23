@@ -164,14 +164,19 @@ export function ReadingHub({ isPremium, defaultTone }: ReadingHubProps) {
               <p className="text-sm text-red-300/80">{error}</p>
             ) : (
               <>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">{getReadingEmoji(selectedCategory)}</span>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest">
-                      {READING_CATEGORY_LABELS[selectedCategory]}
-                    </p>
-                    <p className="text-xs text-gold/50">{TONE_LABELS[selectedTone]}</p>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{getReadingEmoji(selectedCategory)}</span>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                        {READING_CATEGORY_LABELS[selectedCategory]}
+                      </p>
+                      <p className="text-xs text-gold/50">{TONE_LABELS[selectedTone]}</p>
+                    </div>
                   </div>
+                  {!loading && reading && (
+                    <ShareButton text={reading} category={selectedCategory} />
+                  )}
                 </div>
                 <p className="font-serif text-base leading-relaxed text-foreground/90">
                   {reading}
@@ -185,5 +190,40 @@ export function ReadingHub({ isPremium, defaultTone }: ReadingHubProps) {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function ShareButton({ text, category }: { text: string; category: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const excerpt = text.slice(0, 180).replace(/\n/g, " ");
+  const ogUrl = `/api/og/reading?excerpt=${encodeURIComponent(excerpt)}&category=${category}`;
+
+  async function handleShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "My Daily Libra Reading",
+          text: excerpt + "...",
+          url: window.location.origin,
+        });
+        return;
+      } catch {
+        // fallback to copy
+      }
+    }
+    await navigator.clipboard.writeText(window.location.origin + ogUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-gold/80 transition-colors px-2 py-1 rounded-lg border border-transparent hover:border-gold/10"
+    >
+      <span>{copied ? "✓" : "✦"}</span>
+      <span>{copied ? "Copied!" : "Share"}</span>
+    </button>
   );
 }

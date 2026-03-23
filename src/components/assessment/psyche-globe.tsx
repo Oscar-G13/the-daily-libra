@@ -29,23 +29,13 @@ function IcosahedronWireframe({ scale = 1 }: { scale?: number }) {
       {/* Outer wireframe */}
       <mesh ref={meshRef}>
         <icosahedronGeometry args={[1.6, 1]} />
-        <meshBasicMaterial
-          color="#c4a05a"
-          wireframe
-          transparent
-          opacity={0.55}
-        />
+        <meshBasicMaterial color="#c4a05a" wireframe transparent opacity={0.55} />
       </mesh>
 
       {/* Inner glow sphere */}
       <mesh ref={innerRef}>
         <sphereGeometry args={[0.9, 16, 16]} />
-        <meshBasicMaterial
-          color="#b8860b"
-          transparent
-          opacity={0.08}
-          side={THREE.BackSide}
-        />
+        <meshBasicMaterial color="#b8860b" transparent opacity={0.08} side={THREE.BackSide} />
       </mesh>
 
       {/* Core point */}

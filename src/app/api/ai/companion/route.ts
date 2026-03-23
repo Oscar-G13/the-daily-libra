@@ -87,17 +87,20 @@ export async function POST(req: NextRequest) {
   let stream;
   try {
     stream = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...messages.slice(-20), // keep last 20 messages for context window
-    ],
-    max_tokens: 500,
-    temperature: 0.85,
-    stream: true,
-  });
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages.slice(-20), // keep last 20 messages for context window
+      ],
+      max_tokens: 500,
+      temperature: 0.85,
+      stream: true,
+    });
   } catch {
-    return NextResponse.json({ error: "AI service unavailable. Please try again." }, { status: 503 });
+    return NextResponse.json(
+      { error: "AI service unavailable. Please try again." },
+      { status: 503 }
+    );
   }
 
   const readable = new ReadableStream({
@@ -109,7 +112,7 @@ export async function POST(req: NextRequest) {
         }
       } catch {
         controller.enqueue(
-          new TextEncoder().encode("\n\n[Something went wrong. Please try again.]"),
+          new TextEncoder().encode("\n\n[Something went wrong. Please try again.]")
         );
       } finally {
         controller.close();
