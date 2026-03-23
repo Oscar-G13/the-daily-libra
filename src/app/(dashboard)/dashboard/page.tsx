@@ -12,6 +12,7 @@ import { MoodTrendCard } from "@/components/dashboard/mood-trend-card";
 import { TraitPulseCard } from "@/components/dashboard/trait-pulse-card";
 import { StreakCard } from "@/components/dashboard/streak-card";
 import { AchievementsStrip } from "@/components/dashboard/achievements-strip";
+import { ReadingHistoryStrip } from "@/components/dashboard/reading-history-strip";
 import { formatDate } from "@/lib/utils";
 import type { NatalChart } from "@/types";
 
@@ -41,6 +42,7 @@ export default async function DashboardPage() {
     { count: readingCount },
     { data: aiMemory },
     { data: journalDates },
+    { data: recentReadings },
   ] = await Promise.all([
     supabase
       .from("users")
@@ -99,6 +101,12 @@ export default async function DashboardPage() {
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false })
       .limit(30),
+    supabase
+      .from("daily_readings")
+      .select("id, category, tone, reading_date, output_text")
+      .eq("user_id", user!.id)
+      .order("reading_date", { ascending: false })
+      .limit(8),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
@@ -189,6 +197,9 @@ export default async function DashboardPage() {
           modifier={libraProfile?.secondary_modifier ?? null}
         />
       )}
+
+      {/* Reading history */}
+      <ReadingHistoryStrip readings={recentReadings ?? []} />
 
       {/* Achievements */}
       <AchievementsStrip
