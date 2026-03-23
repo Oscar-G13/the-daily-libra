@@ -44,3 +44,14 @@ export const PREMIUM_FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
 export function isPremium(tier: string | null | undefined): boolean {
   return tier === "premium";
 }
+
+export function isHighPriestess(tier: string | null | undefined): boolean {
+  return tier === "high_priestess";
+}
+
+/** High Priestess users get all premium features too */
+export function hasFullAccess(tier: string | null | undefined): boolean {
+  return isPremium(tier) || isHighPriestess(tier);
+}
+
+export const isGuide = isHighPriestess;

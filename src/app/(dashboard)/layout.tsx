@@ -4,6 +4,7 @@ import { DashboardSidebar } from "@/components/layout/sidebar";
 import { DashboardNav } from "@/components/layout/dashboard-nav";
 import { GamificationProvider } from "@/components/gamification/provider";
 import { ClaimReferralOnLoad } from "@/components/referral/claim-on-load";
+import { ClaimGuideTokenOnLoad } from "@/components/guide/claim-guide-token";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -31,6 +32,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
     } | null;
   };
   const profile = profileResult.data;
+
+  // Check if user has any active guide connections (for "My Guidance" nav item)
+  const { data: guidanceConnections } = await (supabase as any)
+    .from("guide_client_connections")
+    .select("id")
+    .eq("client_user_id", user.id)
+    .eq("status", "active")
+    .limit(1);
+  const hasGuidance = (guidanceConnections?.length ?? 0) > 0;
 
   if (!profile?.onboarding_completed) {
     redirect("/onboarding");
@@ -69,11 +79,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
           tier={profile?.subscription_tier ?? "free"}
           initialXP={profile?.xp_total ?? 0}
           initialLevel={profile?.xp_level ?? 1}
+          hasGuidance={hasGuidance}
         />
 
         {/* Main content */}
         <div className="flex-1 flex flex-col min-h-screen ml-0 md:ml-64">
           <ClaimReferralOnLoad />
+          <ClaimGuideTokenOnLoad />
           <DashboardNav />
           <main className="flex-1 px-4 sm:px-6 py-6">{children}</main>
         </div>

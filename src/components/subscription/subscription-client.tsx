@@ -17,11 +17,23 @@ const PREMIUM_FEATURES = [
   "Mood tracking + pattern insights",
 ];
 
+const HP_FEATURES = [
+  "Everything in Premium",
+  "Guide Studio — manage up to 3 client profiles",
+  "Send custom readings directly to clients",
+  "Client inbox with read receipts",
+  "Birth data + transit tracking per client",
+  "Invitation link with your branded profile page",
+  "Private notes per client",
+  "Reading notification emails to clients",
+];
+
 interface SubscriptionClientProps {
   isActive: boolean;
   planName: string | null;
   periodEnd: string | null;
   hasCustomer: boolean;
+  tier?: string;
 }
 
 export function SubscriptionClient({
@@ -29,9 +41,11 @@ export function SubscriptionClient({
   planName,
   periodEnd,
   hasCustomer,
+  tier = "free",
 }: SubscriptionClientProps) {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
+  const [loadingHP, setLoadingHP] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleCheckout() {
@@ -54,6 +68,27 @@ export function SubscriptionClient({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
+    }
+  }
+
+  async function handleHPCheckout() {
+    setLoadingHP(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: "high_priestess_annual" }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error ?? "Failed to create checkout");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setLoadingHP(false);
     }
   }
 
@@ -104,10 +139,12 @@ export function SubscriptionClient({
 
         {isActive ? (
           /* Active subscriber view */
-          <div className="glass-card p-7 border-gold/10 space-y-6">
+          <div className={`glass-card p-7 space-y-6 ${tier === "high_priestess" ? "border-violet-500/15" : "border-gold/10"}`}>
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-              <p className="text-sm text-foreground/80 font-medium">Premium — Active</p>
+              <div className={`w-2 h-2 rounded-full animate-pulse ${tier === "high_priestess" ? "bg-violet-400" : "bg-gold"}`} />
+              <p className="text-sm text-foreground/80 font-medium">
+                {tier === "high_priestess" ? "High Priestess — Active" : "Premium — Active"}
+              </p>
             </div>
 
             {planName && (
@@ -118,6 +155,15 @@ export function SubscriptionClient({
 
             {periodEndDate && (
               <p className="text-xs text-muted-foreground">Next renewal: {periodEndDate}</p>
+            )}
+
+            {tier === "high_priestess" && (
+              <a
+                href="/guide"
+                className="block text-center py-2.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm font-medium hover:bg-violet-500/20 transition-all"
+              >
+                Open Guide Studio →
+              </a>
             )}
 
             <div className="pt-2 space-y-3">
@@ -154,6 +200,7 @@ export function SubscriptionClient({
               ))}
             </div>
 
+            {/* Premium tier card */}
             <div className="glass-card p-7 mb-6 border-gold/10">
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="font-serif text-3xl text-gold-gradient">
@@ -186,6 +233,42 @@ export function SubscriptionClient({
 
               <p className="text-xs text-muted-foreground text-center mt-4">
                 Secure checkout via Stripe. Cancel anytime.
+              </p>
+            </div>
+
+            {/* High Priestess tier card */}
+            <div className="glass-card p-7 border-violet-500/15 space-y-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">🌙</span>
+                <p className="text-xs uppercase tracking-widest text-violet-400/70">High Priestess</p>
+              </div>
+              <div className="flex items-baseline gap-2 mb-4">
+                <span className="font-serif text-3xl text-violet-300">$160</span>
+                <span className="text-sm text-muted-foreground">/ year ($13.33/mo)</span>
+              </div>
+              <p className="text-xs text-muted-foreground/60 mb-5">
+                For tarot readers, astrologers, and spiritual coaches who manage clients inside the app.
+              </p>
+
+              <ul className="space-y-3 mb-8">
+                {HP_FEATURES.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground/80">
+                    <Check className="w-3.5 h-3.5 text-violet-400 mt-0.5 shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={handleHPCheckout}
+                disabled={loadingHP}
+                className="w-full py-4 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-300 font-semibold hover:bg-violet-500/20 transition-all disabled:opacity-50"
+              >
+                {loadingHP ? "Redirecting..." : "Become a High Priestess"}
+              </button>
+
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                Includes all Premium features. Secure checkout via Stripe.
               </p>
             </div>
           </>

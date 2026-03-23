@@ -25,4 +25,13 @@ export const PLANS = {
     interval: "year" as const,
     savingsNote: "Save 33% — $3.33/mo",
   },
+  high_priestess_annual: {
+    // Set up in Stripe dashboard: $160/yr product named "High Priestess"
+    // Nickname field must contain "high_priestess" for webhook detection
+    paymentLink: "https://buy.stripe.com/PLACEHOLDER_HIGH_PRIESTESS",
+    name: "High Priestess",
+    price: 160,
+    interval: "year" as const,
+    description: "Guide Studio · Up to 3 client profiles",
+  },
 } as const;

@@ -3,6 +3,7 @@ import { getStripeClient } from "@/lib/stripe/client";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getResendClient, FROM_EMAIL } from "@/lib/email/client";
 import { SubscriptionConfirmedEmail } from "@/lib/email/templates/subscription-confirmed";
+import { HighPriestessConfirmedEmail } from "@/lib/email/templates/high-priestess-confirmed";
 import { render } from "@react-email/components";
 import type Stripe from "stripe";
 
@@ -36,8 +37,23 @@ export async function POST(req: NextRequest) {
         const isActive = ["active", "trialing"].includes(subscription.status);
         const isNewSubscription = event.type === "customer.subscription.created";
 
-        const priceId = subscription.items.data[0]?.price?.id ?? "";
-        const planName = priceId.includes("annual") ? "premium_annual" : "premium_monthly";
+        const price = subscription.items.data[0]?.price;
+        const priceId = price?.id ?? "";
+        const priceNickname = (price?.nickname ?? "").toLowerCase();
+
+        // Detect High Priestess by nickname (set in Stripe dashboard) or price ID hint
+        const isHighPriestessPlan =
+          priceNickname.includes("high_priestess") ||
+          priceNickname.includes("high priestess") ||
+          priceId.includes("high_priestess");
+
+        const planName = isHighPriestessPlan
+          ? "high_priestess_annual"
+          : priceId.includes("annual") || price?.recurring?.interval === "year"
+          ? "premium_annual"
+          : "premium_monthly";
+
+        const tier = isHighPriestessPlan ? "high_priestess" : "premium";
 
         await supabase.from("subscriptions").upsert({
           user_id: userId,
@@ -49,9 +65,9 @@ export async function POST(req: NextRequest) {
           cancel_at_period_end: subscription.cancel_at_period_end,
         });
 
-        await supabase
+        await (supabase as any)
           .from("users")
-          .update({ subscription_tier: isActive ? "premium" : "free" })
+          .update({ subscription_tier: isActive ? tier : "free" })
           .eq("id", userId);
 
         // Send subscription confirmation email on new active subscription
@@ -64,17 +80,33 @@ export async function POST(req: NextRequest) {
 
           if (userData?.email) {
             const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://thedailylibra.com";
-            const html = await render(
-              SubscriptionConfirmedEmail({
-                displayName: userData.display_name ?? "Libra",
-                planName,
-                appUrl,
-              })
-            );
+
+            let html: string;
+            let subject: string;
+
+            if (isHighPriestessPlan) {
+              html = await render(
+                HighPriestessConfirmedEmail({
+                  displayName: userData.display_name ?? "Guide",
+                  appUrl,
+                })
+              );
+              subject = "Your High Priestess studio is ready.";
+            } else {
+              html = await render(
+                SubscriptionConfirmedEmail({
+                  displayName: userData.display_name ?? "Libra",
+                  planName,
+                  appUrl,
+                })
+              );
+              subject = "Premium is active. You're in.";
+            }
+
             await getResendClient().emails.send({
               from: FROM_EMAIL,
               to: userData.email,
-              subject: "Premium is active. You're in.",
+              subject,
               html,
             });
           }

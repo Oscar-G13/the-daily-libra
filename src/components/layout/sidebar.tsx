@@ -27,11 +27,18 @@ const NAV_ITEMS = [
   { href: "/settings", label: "Settings", icon: "⚙️" },
 ];
 
+const GUIDE_NAV_ITEMS = [
+  { href: "/guide", label: "Guide Studio", icon: "🌙" },
+  { href: "/guide/clients", label: "My Clients", icon: "✦" },
+  { href: "/guide/profile", label: "Studio Profile", icon: "♎" },
+];
+
 interface DashboardSidebarProps {
   displayName: string;
   tier: string;
   initialXP?: number;
   initialLevel?: number;
+  hasGuidance?: boolean;
 }
 
 export function DashboardSidebar({
@@ -39,6 +46,7 @@ export function DashboardSidebar({
   tier,
   initialXP = 0,
   initialLevel = 1,
+  hasGuidance = false,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -59,12 +67,14 @@ export function DashboardSidebar({
         <span
           className={cn(
             "text-xs px-2 py-0.5 rounded-full inline-block mt-1",
-            tier === "premium"
+            tier === "high_priestess"
+              ? "bg-violet-500/10 text-violet-300 border border-violet-500/20"
+              : tier === "premium"
               ? "bg-gold/10 text-gold-200 border border-gold/20"
               : "bg-white/[0.04] text-muted-foreground border border-white/[0.06]"
           )}
         >
-          {tier === "premium" ? "✦ Premium" : "Free"}
+          {tier === "high_priestess" ? "🌙 High Priestess" : tier === "premium" ? "✦ Premium" : "Free"}
         </span>
       </div>
 
@@ -72,7 +82,7 @@ export function DashboardSidebar({
       <XPBar initialXP={initialXP} initialLevel={initialLevel} />
 
       {/* Nav */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto p-4 space-y-1">
         {NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -91,7 +101,7 @@ export function DashboardSidebar({
             >
               <span className="text-base">{item.icon}</span>
               <span className="flex-1">{item.label}</span>
-              {item.pro && tier !== "premium" && (
+              {item.pro && tier !== "premium" && tier !== "high_priestess" && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-gold/[0.08] text-gold/50 border border-gold/10 font-medium">
                   PRO
                 </span>
@@ -99,6 +109,58 @@ export function DashboardSidebar({
             </Link>
           );
         })}
+
+        {/* My Guidance — visible when user has an active guide connection */}
+        {hasGuidance && (
+          <>
+            <div className="pt-3 pb-1 px-3">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/30">Guidance</p>
+            </div>
+            <Link
+              href="/guidance"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
+                pathname === "/guidance" || pathname.startsWith("/guidance/")
+                  ? "bg-gold/[0.08] text-gold-200 border border-gold/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
+              )}
+            >
+              <span className="text-base">📬</span>
+              <span className="flex-1">My Guidance</span>
+            </Link>
+          </>
+        )}
+
+        {/* Guide Studio — visible only for High Priestess subscribers */}
+        {tier === "high_priestess" && (
+          <>
+            <div className="pt-3 pb-1 px-3">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/30">Guide Studio</p>
+            </div>
+            {GUIDE_NAV_ITEMS.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/guide" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
+                    isActive
+                      ? "bg-violet-500/[0.08] text-violet-300 border border-violet-500/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
+                  )}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span className="flex-1">{item.label}</span>
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
 
       {/* Footer */}
