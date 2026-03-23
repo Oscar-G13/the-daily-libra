@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 type AlertType = "info" | "warning" | "ban" | "mute" | "suspension";
 
-const ALLOWED_ALERT_TYPES = new Set<AlertType>([
-  "info",
-  "warning",
-  "ban",
-  "mute",
-  "suspension",
-]);
+const ALLOWED_ALERT_TYPES = new Set<AlertType>(["info", "warning", "ban", "mute", "suspension"]);
 
 // ─── POST /api/admin/users/[id]/alert ─────────────────────────────────────────
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient();
+  const serviceSupabase = await createServiceClient();
 
   // Auth check
   const {
@@ -62,7 +54,7 @@ export async function POST(
   }
 
   // Verify target user exists
-  const { data: targetUser } = await (supabase as any)
+  const { data: targetUser } = await (serviceSupabase as any)
     .from("users")
     .select("id")
     .eq("id", params.id)
@@ -73,7 +65,7 @@ export async function POST(
   }
 
   // Insert alert
-  const { data: alert, error: insertError } = await (supabase as any)
+  const { data: alert, error: insertError } = await (serviceSupabase as any)
     .from("user_alerts")
     .insert({
       user_id: params.id,

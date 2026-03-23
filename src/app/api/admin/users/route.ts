@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
+  const serviceSupabase = await createServiceClient();
 
   // Auth check
   const {
@@ -43,19 +44,13 @@ export async function GET(req: NextRequest) {
     "share_token",
   ].join(", ");
 
-  let query = (supabase as any)
-    .from("users")
-    .select(columns, { count: "exact" });
+  let query = (serviceSupabase as any).from("users").select(columns, { count: "exact" });
 
   if (search) {
-    query = query.or(
-      `display_name.ilike.%${search}%,email.ilike.%${search}%`
-    );
+    query = query.or(`display_name.ilike.%${search}%,email.ilike.%${search}%`);
   }
 
-  query = query
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
+  query = query.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
 
   const { data: users, count, error } = await query;
 

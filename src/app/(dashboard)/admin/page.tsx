@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -6,6 +6,7 @@ export const metadata = { title: "Admin Panel — The Daily Libra" };
 
 export default async function AdminPage() {
   const supabase = await createClient();
+  const serviceSupabase = await createServiceClient();
 
   const {
     data: { user },
@@ -35,30 +36,26 @@ export default async function AdminPage() {
     { count: totalFeedPosts },
     { count: bannedOrSuspended },
   ] = await Promise.all([
-    (supabase as any)
-      .from("users")
-      .select("id", { count: "exact", head: true }),
+    (serviceSupabase as any).from("users").select("id", { count: "exact", head: true }),
 
-    (supabase as any)
+    (serviceSupabase as any)
       .from("users")
       .select("id", { count: "exact", head: true })
       .eq("subscription_tier", "premium"),
 
-    (supabase as any)
+    (serviceSupabase as any)
       .from("users")
       .select("id", { count: "exact", head: true })
       .eq("subscription_tier", "high_priestess"),
 
-    (supabase as any)
+    (serviceSupabase as any)
       .from("users")
       .select("id", { count: "exact", head: true })
       .gte("created_at", todayIso),
 
-    (supabase as any)
-      .from("feed_posts")
-      .select("id", { count: "exact", head: true }),
+    (serviceSupabase as any).from("feed_posts").select("id", { count: "exact", head: true }),
 
-    (supabase as any)
+    (serviceSupabase as any)
       .from("users")
       .select("id", { count: "exact", head: true })
       .in("account_status", ["banned", "suspended"]),
@@ -70,7 +67,12 @@ export default async function AdminPage() {
     { label: "High Priestess", value: highPriestessUsers ?? 0, accent: true },
     { label: "Joined Today", value: todayUsers ?? 0, accent: false },
     { label: "Feed Posts", value: totalFeedPosts ?? 0, accent: false },
-    { label: "Banned / Suspended", value: bannedOrSuspended ?? 0, accent: false, warning: (bannedOrSuspended ?? 0) > 0 },
+    {
+      label: "Banned / Suspended",
+      value: bannedOrSuspended ?? 0,
+      accent: false,
+      warning: (bannedOrSuspended ?? 0) > 0,
+    },
   ];
 
   return (
@@ -86,20 +88,11 @@ export default async function AdminPage() {
       {/* Stat grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="glass-card p-5 space-y-1"
-          >
-            <p className="text-xs text-muted-foreground uppercase tracking-widest">
-              {stat.label}
-            </p>
+          <div key={stat.label} className="glass-card p-5 space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest">{stat.label}</p>
             <p
               className={`font-serif text-3xl font-light ${
-                stat.warning
-                  ? "text-red-400"
-                  : stat.accent
-                  ? "text-gold-200"
-                  : "text-foreground"
+                stat.warning ? "text-red-400" : stat.accent ? "text-gold-200" : "text-foreground"
               }`}
             >
               {stat.value.toLocaleString()}
