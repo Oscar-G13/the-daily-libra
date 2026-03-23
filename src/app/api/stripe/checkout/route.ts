@@ -56,18 +56,19 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [{ price: plan.priceId, quantity: 1 }],
-    success_url: `${appUrl}/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/subscription?canceled=true`,
-    subscription_data: {
-      metadata: { supabase_user_id: user.id },
-    },
-    allow_promotion_codes: true,
-  });
+  // Build payment link URL with prefilled customer context
+  const paymentUrl = new URL(plan.paymentLink);
+  paymentUrl.searchParams.set("prefilled_email", user.email ?? "");
+  paymentUrl.searchParams.set("client_reference_id", user.id);
+  paymentUrl.searchParams.set(
+    "success_url",
+    `${appUrl}/subscription?success=true`
+  );
 
-  return NextResponse.json({ url: session.url });
+  // Attach Stripe customer if we have one
+  if (customerId) {
+    paymentUrl.searchParams.set("customer", customerId);
+  }
+
+  return NextResponse.json({ url: paymentUrl.toString() });
 }

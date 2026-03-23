@@ -13,16 +13,16 @@ export function getStripeClient(): Stripe {
 
 export const PLANS = {
   premium_monthly: {
-    priceId: process.env.STRIPE_PREMIUM_PRICE_ID!,
+    paymentLink: "https://buy.stripe.com/5kQ28r0Ep6tB2Ia7Dics800",
     name: "Premium Monthly",
-    price: 12,
+    price: 5,
     interval: "month" as const,
   },
   premium_annual: {
-    priceId: process.env.STRIPE_PREMIUM_ANNUAL_PRICE_ID!,
+    paymentLink: "https://buy.stripe.com/eVq5kDcn719h0A28Hmcs801",
     name: "Premium Annual",
-    price: 96,
+    price: 40,
     interval: "year" as const,
-    savingsNote: "Save 33% vs monthly",
+    savingsNote: "Save 33% — $3.33/mo",
   },
 } as const;
