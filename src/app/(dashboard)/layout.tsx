@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardSidebar } from "@/components/layout/sidebar";
 import { DashboardNav } from "@/components/layout/dashboard-nav";
 import { GamificationProvider } from "@/components/gamification/provider";
+import { ClaimReferralOnLoad } from "@/components/referral/claim-on-load";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -72,6 +73,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         {/* Main content */}
         <div className="flex-1 flex flex-col min-h-screen ml-0 md:ml-64">
+          <ClaimReferralOnLoad />
           <DashboardNav />
           <main className="flex-1 px-4 sm:px-6 py-6">{children}</main>
         </div>

@@ -8,21 +8,21 @@ import { useState } from "react";
 import { XPBar } from "@/components/gamification/xp-bar";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: "☀️" },
-  { href: "/insight-quiz", label: "Insight Session", icon: "🧠" },
-  { href: "/reading", label: "Readings", icon: "🔮" },
-  { href: "/compatibility", label: "Compatibility Lab", icon: "🌹" },
-  { href: "/decision", label: "Decision Decoder", icon: "⚖" },
-  { href: "/text-decoder", label: "Text Decoder", icon: "📱" },
-  { href: "/red-flag", label: "Red Flag Decoder", icon: "🚩" },
-  { href: "/cosmic-room", label: "Cosmic Room", icon: "✦" },
-  { href: "/moon", label: "Moon Calendar", icon: "🌙" },
-  { href: "/profile", label: "My Profile", icon: "♎" },
-  { href: "/aesthetic", label: "Aesthetic Profile", icon: "♀" },
-  { href: "/chart", label: "Birth Chart", icon: "✦" },
-  { href: "/companion", label: "AI Companion", icon: "🪞" },
-  { href: "/journal", label: "Journal", icon: "📖" },
-  { href: "/subscription", label: "Premium", icon: "💎" },
+  { href: "/dashboard", label: "Dashboard", icon: "☀️", pro: false },
+  { href: "/insight-quiz", label: "Insight Session", icon: "🧠", pro: true },
+  { href: "/reading", label: "Readings", icon: "🔮", pro: false },
+  { href: "/compatibility", label: "Compatibility Lab", icon: "🌹", pro: false },
+  { href: "/decision", label: "Decision Decoder", icon: "⚖", pro: false },
+  { href: "/text-decoder", label: "Text Decoder", icon: "📱", pro: true },
+  { href: "/red-flag", label: "Red Flag Decoder", icon: "🚩", pro: true },
+  { href: "/cosmic-room", label: "Cosmic Room", icon: "✦", pro: true },
+  { href: "/moon", label: "Moon Calendar", icon: "🌙", pro: false },
+  { href: "/profile", label: "My Profile", icon: "♎", pro: false },
+  { href: "/aesthetic", label: "Aesthetic Profile", icon: "♀", pro: false },
+  { href: "/chart", label: "Birth Chart", icon: "✦", pro: false },
+  { href: "/companion", label: "AI Companion", icon: "🪞", pro: false },
+  { href: "/journal", label: "Journal", icon: "📖", pro: false },
+  { href: "/subscription", label: "Premium", icon: "💎", pro: false },
   { href: "/settings", label: "Settings", icon: "⚙️" },
 ];
 
@@ -89,7 +89,12 @@ export function DashboardSidebar({
               )}
             >
               <span className="text-base">{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.pro && tier !== "premium" && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gold/[0.08] text-gold/50 border border-gold/10 font-medium">
+                  PRO
+                </span>
+              )}
             </Link>
           );
         })}

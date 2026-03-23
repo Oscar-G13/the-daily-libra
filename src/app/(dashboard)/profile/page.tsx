@@ -20,6 +20,18 @@ export default async function ProfilePage() {
     supabase.from("birth_profiles").select("*").eq("user_id", user!.id).single(),
   ]);
 
+  // Fetch referrer if user was invited
+  const referredBy = (userData as any)?.referred_by as string | null;
+  let referrer: { display_name: string | null; avatar_url: string | null; referral_code: string | null } | null = null;
+  if (referredBy) {
+    const { data } = await (supabase as any)
+      .from("users")
+      .select("display_name, avatar_url, referral_code")
+      .eq("id", referredBy)
+      .single();
+    referrer = data;
+  }
+
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
   const archetype = libraProfile?.primary_archetype as LibraArchetype | null;
   const modifier = libraProfile?.secondary_modifier as ArchetypeModifier | null;
@@ -33,6 +45,42 @@ export default async function ProfilePage() {
         <h1 className="font-serif text-display-xs text-foreground">My Libra Profile</h1>
         <p className="text-sm text-muted-foreground mt-1">Your evolving identity map.</p>
       </div>
+
+      {/* Invited by badge */}
+      {referrer && (
+        <div className="glass-card px-5 py-3 flex items-center gap-3 border border-gold/10">
+          {referrer.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={referrer.avatar_url}
+              alt={referrer.display_name ?? ""}
+              className="w-8 h-8 rounded-full object-cover border border-gold/20"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-sm">
+              ♎
+            </div>
+          )}
+          <div className="flex-1">
+            <p className="text-xs text-muted-foreground">Invited by</p>
+            {referrer.referral_code ? (
+              <Link
+                href={`/join/${referrer.referral_code}`}
+                className="text-sm text-gold/70 hover:text-gold transition-colors font-medium"
+              >
+                {referrer.display_name ?? "A fellow Libra"}
+              </Link>
+            ) : (
+              <p className="text-sm text-foreground/80 font-medium">
+                {referrer.display_name ?? "A fellow Libra"}
+              </p>
+            )}
+          </div>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-gold/[0.08] text-gold/60 border border-gold/10">
+            ✦ Invited
+          </span>
+        </div>
+      )}
 
       {/* Archetype section */}
       {archetype && archetypeData && (

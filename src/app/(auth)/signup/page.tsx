@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function SignupForm() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,6 +24,28 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [refCode, setRefCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Prefer URL param, fallback to localStorage (set by /join/[code] page)
+    const urlRef = searchParams.get("ref");
+    const storedRef = typeof window !== "undefined" ? localStorage.getItem("ref_code") : null;
+    setRefCode(urlRef || storedRef);
+  }, [searchParams]);
+
+  async function claimReferral() {
+    if (!refCode) return;
+    try {
+      await fetch("/api/referral/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: refCode }),
+      });
+      localStorage.removeItem("ref_code");
+    } catch {
+      // non-fatal
+    }
+  }
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -35,12 +67,15 @@ export default function SignupPage() {
       return;
     }
 
+    await claimReferral();
     setSuccess(true);
     setLoading(false);
   }
 
   async function handleGoogleSignup() {
     setLoading(true);
+    // Persist ref code so auth/callback can claim it after OAuth redirect
+    if (refCode) localStorage.setItem("ref_code", refCode);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
