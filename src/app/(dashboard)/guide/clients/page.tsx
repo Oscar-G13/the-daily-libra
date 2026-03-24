@@ -9,22 +9,12 @@ export default function GuideClientsPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
-  const [readingCounts, setReadingCounts] = useState<Record<string, number>>({});
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
-  const [lastReadingDates, setLastReadingDates] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     fetch("/api/guide/clients")
       .then((r) => r.json())
       .then((d) => {
         setClients(d.clients ?? []);
-        // Build reading stats from clients list
-        const rCounts: Record<string, number> = {};
-        const uCounts: Record<string, number> = {};
-        const lDates: Record<string, string | null> = {};
-        setReadingCounts(rCounts);
-        setUnreadCounts(uCounts);
-        setLastReadingDates(lDates);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -100,9 +90,10 @@ export default function GuideClientsPage() {
             <ClientCard
               key={c.id}
               connection={c}
-              readingCount={readingCounts[c.id] ?? 0}
-              unreadCount={unreadCounts[c.id] ?? 0}
-              lastReadingDate={lastReadingDates[c.id] ?? null}
+              readingCount={c.reading_count ?? 0}
+              unreadCount={c.unread_count ?? 0}
+              lastReadingDate={c.last_reading_date ?? null}
+              linkedUser={c.linked_user ?? null}
             />
           ))}
         </div>

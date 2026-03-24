@@ -21,9 +21,24 @@ export default async function ProfilePage() {
     supabase.from("birth_profiles").select("*").eq("user_id", user!.id).single(),
   ]);
 
-  // Fetch referrer + guide info if user was invited
+  // Fetch recruiter/guide — check referred_by first, then fall back to guide_client_connections
   const referredBy = (userData as any)?.referred_by as string | null;
   const inviterRemoved = (userData as any)?.inviter_removed as boolean ?? false;
+  let recruiterId: string | null = referredBy && !inviterRemoved ? referredBy : null;
+
+  // If referred_by not set, check for an active guide connection (came via invite token)
+  if (!recruiterId) {
+    const { data: conn } = await (supabase as any)
+      .from("guide_client_connections")
+      .select("guide_id")
+      .eq("client_user_id", user!.id)
+      .eq("status", "active")
+      .order("accepted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (conn?.guide_id) recruiterId = conn.guide_id;
+  }
+
   let referrer: {
     display_name: string | null;
     avatar_url: string | null;
@@ -36,11 +51,11 @@ export default async function ProfilePage() {
     guide_role: string | null;
   } | null = null;
 
-  if (referredBy && !inviterRemoved) {
+  if (recruiterId) {
     const { data } = await (supabase as any)
       .from("users")
       .select("display_name, avatar_url, referral_code, subscription_tier")
-      .eq("id", referredBy)
+      .eq("id", recruiterId)
       .single();
     referrer = data;
 
@@ -48,7 +63,7 @@ export default async function ProfilePage() {
       const { data: gp } = await (supabase as any)
         .from("guide_profiles")
         .select("business_name, tagline, guide_role")
-        .eq("id", referredBy)
+        .eq("id", recruiterId)
         .maybeSingle();
       referrerGuideProfile = gp;
     }

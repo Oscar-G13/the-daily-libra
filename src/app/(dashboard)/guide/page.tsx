@@ -52,6 +52,21 @@ export default async function GuidePage() {
         .limit(5),
     ]);
 
+  // Fetch linked user activity for connected clients
+  const linkedUserIds = (connections ?? [])
+    .filter((c: any) => c.client_user_id)
+    .map((c: any) => c.client_user_id);
+
+  const { data: linkedUsersData } = linkedUserIds.length
+    ? await (supabase as any)
+        .from("users")
+        .select("id, app_streak, xp_level, last_active_date")
+        .in("id", linkedUserIds)
+    : { data: [] };
+
+  const linkedUserMap: Record<string, any> = {};
+  (linkedUsersData ?? []).forEach((u: any) => { linkedUserMap[u.id] = u; });
+
   const clients = connections ?? [];
   const readings = recentReadings ?? [];
 
@@ -182,6 +197,7 @@ export default async function GuidePage() {
                 readingCount={readingCountMap[c.id] ?? 0}
                 unreadCount={unreadCountMap[c.id] ?? 0}
                 lastReadingDate={lastReadingMap[c.id] ?? null}
+                linkedUser={c.client_user_id ? linkedUserMap[c.client_user_id] ?? null : null}
               />
             ))}
           </div>

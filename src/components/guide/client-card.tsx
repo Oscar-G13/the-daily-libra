@@ -4,6 +4,12 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
+interface LinkedUser {
+  app_streak: number | null;
+  xp_level: number | null;
+  last_active_date: string | null;
+}
+
 interface ClientCardProps {
   connection: {
     id: string;
@@ -16,6 +22,7 @@ interface ClientCardProps {
   readingCount: number;
   unreadCount: number;
   lastReadingDate: string | null;
+  linkedUser?: LinkedUser | null;
 }
 
 export function ClientCard({
@@ -23,9 +30,16 @@ export function ClientCard({
   readingCount,
   unreadCount,
   lastReadingDate,
+  linkedUser,
 }: ClientCardProps) {
   const name = connection.client_name ?? connection.client_email.split("@")[0];
   const isPending = connection.status === "pending";
+  const streak = linkedUser?.app_streak ?? 0;
+  const level = linkedUser?.xp_level ?? null;
+
+  // "Active today" if last_active_date is today
+  const today = new Date().toISOString().split("T")[0];
+  const activeToday = linkedUser?.last_active_date === today;
 
   return (
     <Link href={`/guide/clients/${connection.id}`}>
@@ -39,19 +53,23 @@ export function ClientCard({
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center text-lg border-2",
+                "w-10 h-10 rounded-full flex items-center justify-center text-lg border-2 relative",
                 isPending
                   ? "bg-white/[0.04] border-white/[0.08]"
                   : "bg-gold/[0.08] border-gold/20"
               )}
             >
               {isPending ? "✉" : "♎"}
+              {/* Active-today dot */}
+              {activeToday && !isPending && (
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-charcoal" />
+              )}
             </div>
             <div>
               <p className="text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors">
                 {name}
               </p>
-              <p className="text-xs text-muted-foreground/50 truncate max-w-[180px]">
+              <p className="text-xs text-muted-foreground/50 truncate max-w-[160px]">
                 {connection.client_email}
               </p>
             </div>
@@ -70,9 +88,9 @@ export function ClientCard({
         </div>
 
         {!isPending && (
-          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/[0.04]">
+          <div className="grid grid-cols-4 gap-2 pt-3 border-t border-white/[0.04]">
             <div className="text-center">
-              <p className="text-xs text-muted-foreground/40">Readings</p>
+              <p className="text-xs text-muted-foreground/40">Sent</p>
               <p className="text-sm text-foreground/70 font-medium">{readingCount}</p>
             </div>
             <div className="text-center">
@@ -87,14 +105,24 @@ export function ClientCard({
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-muted-foreground/40">Last sent</p>
-              <p className="text-xs text-foreground/50">
-                {lastReadingDate
-                  ? formatDistanceToNow(new Date(lastReadingDate), { addSuffix: true })
-                  : "—"}
+              <p className="text-xs text-muted-foreground/40">Streak</p>
+              <p className={cn("text-sm font-medium", streak > 0 ? "text-foreground/70" : "text-foreground/30")}>
+                {streak}🔥
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground/40">Level</p>
+              <p className="text-sm text-foreground/70 font-medium">
+                {level !== null ? `${level}` : "—"}
               </p>
             </div>
           </div>
+        )}
+
+        {!isPending && lastReadingDate && (
+          <p className="text-[10px] text-muted-foreground/30 mt-2">
+            Last sent {formatDistanceToNow(new Date(lastReadingDate), { addSuffix: true })}
+          </p>
         )}
 
         {isPending && connection.invite_sent_at && (

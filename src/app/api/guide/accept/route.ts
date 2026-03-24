@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 /** POST /api/guide/accept — accept a guide invitation by token */
 export async function POST(req: NextRequest) {
@@ -32,8 +32,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, already_accepted: true });
   }
 
+  const service = await createServiceClient();
+
   // Link client_user_id and activate
-  await (supabase as any)
+  await (service as any)
     .from("guide_client_connections")
     .update({
       client_user_id: user.id,
@@ -41,6 +43,20 @@ export async function POST(req: NextRequest) {
       accepted_at: new Date().toISOString(),
     })
     .eq("id", connection.id);
+
+  // Also set referred_by on the user so the profile page shows the guide
+  const { data: me } = await (service as any)
+    .from("users")
+    .select("referred_by")
+    .eq("id", user.id)
+    .single();
+
+  if (!me?.referred_by) {
+    await (service as any)
+      .from("users")
+      .update({ referred_by: connection.guide_id })
+      .eq("id", user.id);
+  }
 
   // Clean up any pending guide_token in localStorage (client handles this)
   return NextResponse.json({ ok: true });

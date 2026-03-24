@@ -194,17 +194,22 @@ export default async function DashboardPage({
 
   if (connectionData?.guide_id) {
     const [{ data: guideUser }, { data: guideProfile }] = await Promise.all([
-      supabase.from("users").select("display_name").eq("id", connectionData.guide_id).single(),
+      // referral_code lives on users, not guide_profiles
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any)
+        .from("users")
+        .select("display_name, referral_code")
+        .eq("id", connectionData.guide_id)
+        .single() as Promise<{ data: { display_name: string | null; referral_code: string | null } | null }>,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any)
         .from("guide_profiles")
-        .select("business_name, tagline, referral_code, guide_role")
+        .select("business_name, tagline, guide_role")
         .eq("id", connectionData.guide_id)
         .maybeSingle() as Promise<{
           data: {
             business_name: string | null;
             tagline: string | null;
-            referral_code: string | null;
             guide_role: string | null;
           } | null;
         }>,
@@ -212,7 +217,7 @@ export default async function DashboardPage({
 
     guideInfo = {
       name: guideProfile?.business_name ?? guideUser?.display_name ?? "your Guide",
-      slug: guideProfile?.referral_code ?? null,
+      slug: guideUser?.referral_code ?? null,
       role: guideProfile?.guide_role ?? null,
       tagline: guideProfile?.tagline ?? null,
     };

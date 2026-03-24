@@ -29,7 +29,58 @@ export async function GET() {
     .eq("guide_id", user.id)
     .order("created_at", { ascending: false });
 
-  return NextResponse.json({ clients: clients ?? [] });
+  const list = clients ?? [];
+
+  if (list.length === 0) return NextResponse.json({ clients: [] });
+
+  const connectionIds = list.map((c: any) => c.id);
+  const linkedUserIds = list.filter((c: any) => c.client_user_id).map((c: any) => c.client_user_id);
+
+  // Fetch reading stats per connection
+  const { data: readingRows } = await (supabase as any)
+    .from("guide_readings")
+    .select("client_connection_id, client_viewed_at, published_at, is_published")
+    .eq("guide_id", user.id)
+    .eq("is_archived", false)
+    .in("client_connection_id", connectionIds);
+
+  // Fetch linked user activity
+  const { data: linkedUsers } = linkedUserIds.length
+    ? await (supabase as any)
+        .from("users")
+        .select("id, app_streak, xp_level, last_active_date")
+        .in("id", linkedUserIds)
+    : { data: [] };
+
+  // Build maps
+  const readingCountMap: Record<string, number> = {};
+  const unreadCountMap: Record<string, number> = {};
+  const lastReadingMap: Record<string, string | null> = {};
+
+  (readingRows ?? []).forEach((r: any) => {
+    const cid = r.client_connection_id;
+    if (r.is_published) {
+      readingCountMap[cid] = (readingCountMap[cid] ?? 0) + 1;
+      if (!r.client_viewed_at) unreadCountMap[cid] = (unreadCountMap[cid] ?? 0) + 1;
+      if (!lastReadingMap[cid] || r.published_at > lastReadingMap[cid]!) {
+        lastReadingMap[cid] = r.published_at;
+      }
+    }
+  });
+
+  const userActivityMap: Record<string, any> = {};
+  (linkedUsers ?? []).forEach((u: any) => { userActivityMap[u.id] = u; });
+
+  // Enrich clients
+  const enriched = list.map((c: any) => ({
+    ...c,
+    reading_count: readingCountMap[c.id] ?? 0,
+    unread_count: unreadCountMap[c.id] ?? 0,
+    last_reading_date: lastReadingMap[c.id] ?? null,
+    linked_user: c.client_user_id ? userActivityMap[c.client_user_id] ?? null : null,
+  }));
+
+  return NextResponse.json({ clients: enriched });
 }
 
 /** POST /api/guide/clients — invite a new client */
