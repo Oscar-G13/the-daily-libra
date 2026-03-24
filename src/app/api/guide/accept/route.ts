@@ -12,8 +12,12 @@ export async function POST(req: NextRequest) {
   const { token } = await req.json();
   if (!token) return NextResponse.json({ error: "Token required." }, { status: 400 });
 
-  // Find the connection
-  const { data: connection } = await (supabase as any)
+  // MUST use service client here — pending connections have client_user_id = NULL,
+  // so RLS (which only allows reading where client_user_id = auth.uid() OR guide_id = auth.uid())
+  // returns nothing for the accepting user. Every invite-accept would silently 404 without this.
+  const service = await createServiceClient();
+
+  const { data: connection } = await (service as any)
     .from("guide_client_connections")
     .select("id, status, guide_id, client_user_id, client_email")
     .eq("invite_token", token)
@@ -32,9 +36,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, already_accepted: true });
   }
 
-  const service = await createServiceClient();
-
-  // Link client_user_id and activate
+  // Activate connection and link the user
   await (service as any)
     .from("guide_client_connections")
     .update({
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
     })
     .eq("id", connection.id);
 
-  // Also set referred_by on the user so the profile page shows the guide
+  // Set referred_by so the profile page shows the guide (if not already set)
   const { data: me } = await (service as any)
     .from("users")
     .select("referred_by")
@@ -58,6 +60,5 @@ export async function POST(req: NextRequest) {
       .eq("id", user.id);
   }
 
-  // Clean up any pending guide_token in localStorage (client handles this)
   return NextResponse.json({ ok: true });
 }

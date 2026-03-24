@@ -61,12 +61,18 @@ function SignupForm() {
     setLoading(true);
     setError(null);
 
+    // Build callback URL — include guide_token so cross-device email confirmation
+    // still lands the user in the right place with their token intact.
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", nextPath);
+    if (guideToken) callbackUrl.searchParams.set("guide_token", guideToken);
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        emailRedirectTo: callbackUrl.toString(),
       },
     });
 

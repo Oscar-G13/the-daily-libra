@@ -2,13 +2,18 @@ import { redirect } from "next/navigation";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { StoreGuideToken } from "@/components/onboarding/store-guide-token";
 
 interface OnboardingProfile {
   onboarding_completed: boolean | null;
   display_name: string | null;
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ guide_token?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -45,5 +50,14 @@ export default async function OnboardingPage() {
     redirect("/dashboard");
   }
 
-  return <OnboardingFlow userId={user.id} displayName={profile.display_name ?? ""} />;
+  const resolvedParams = searchParams ? await searchParams : {};
+  const guideToken = resolvedParams.guide_token ?? null;
+
+  return (
+    <>
+      {/* Re-hydrate guide_token into localStorage if it arrived via email confirmation URL */}
+      {guideToken && <StoreGuideToken token={guideToken} />}
+      <OnboardingFlow userId={user.id} displayName={profile.display_name ?? ""} />
+    </>
+  );
 }

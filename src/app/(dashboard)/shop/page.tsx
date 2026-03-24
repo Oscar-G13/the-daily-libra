@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ShopGrid } from "@/components/shop/shop-grid";
+import { AetherPacks } from "@/components/shop/aether-packs";
 
 export const metadata = { title: "Aether Shop" };
 
@@ -85,6 +86,9 @@ export default async function ShopPage() {
           </div>
         ))}
       </div>
+
+      {/* Buy Aether packs via Stripe */}
+      <AetherPacks />
 
       {/* Shop grid */}
       <ShopGrid

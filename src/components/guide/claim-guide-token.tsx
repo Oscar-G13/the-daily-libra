@@ -1,13 +1,24 @@
 "use client";
 
 import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-/** Silently accepts any pending Guide invitation stored in localStorage.
- *  Handles both direct signup and Google OAuth flows.
- *  After accepting, reloads the dashboard so the server-rendered guide card appears. */
-export function ClaimGuideTokenOnLoad() {
+function ClaimGuideTokenInner() {
+  const searchParams = useSearchParams();
+
   useEffect(() => {
-    const token = localStorage.getItem("guide_token");
+    // Also accept tokens forwarded via URL (cross-device email confirmation path)
+    const urlToken = searchParams.get("guide_token");
+    if (urlToken) {
+      localStorage.setItem("guide_token", urlToken);
+      // Clean the URL without reloading
+      const url = new URL(window.location.href);
+      url.searchParams.delete("guide_token");
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    const token = urlToken || localStorage.getItem("guide_token");
     if (!token) return;
 
     fetch("/api/guide/accept", {
@@ -28,7 +39,18 @@ export function ClaimGuideTokenOnLoad() {
       .catch(() => {
         localStorage.removeItem("guide_token");
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return null;
+}
+
+/** Silently accepts any pending Guide invitation stored in localStorage or URL.
+ *  Handles direct signup, Google OAuth, and cross-device email confirmation flows. */
+export function ClaimGuideTokenOnLoad() {
+  return (
+    <Suspense fallback={null}>
+      <ClaimGuideTokenInner />
+    </Suspense>
+  );
 }

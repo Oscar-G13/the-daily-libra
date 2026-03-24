@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
+  // Forwarded from emailRedirectTo so cross-device email confirmation keeps the token
+  const guideToken = searchParams.get("guide_token");
 
   if (code) {
     const supabase = await createClient();
@@ -44,16 +46,20 @@ export async function GET(request: NextRequest) {
               html,
             })
             .catch(() => {});
-
-          return NextResponse.redirect(`${origin}/onboarding`);
         }
 
         if (isNewUser) {
-          return NextResponse.redirect(`${origin}/onboarding`);
+          // Pass guide_token to onboarding so the flow can claim it after completion
+          const onboardUrl = new URL("/onboarding", origin);
+          if (guideToken) onboardUrl.searchParams.set("guide_token", guideToken);
+          return NextResponse.redirect(onboardUrl.toString());
         }
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      // Existing user — forward guide_token so ClaimGuideTokenOnLoad can find it
+      const destUrl = new URL(next.startsWith("/") ? next : "/dashboard", origin);
+      if (guideToken) destUrl.searchParams.set("guide_token", guideToken);
+      return NextResponse.redirect(destUrl.toString());
     }
   }
 

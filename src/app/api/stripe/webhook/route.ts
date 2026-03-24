@@ -327,6 +327,53 @@ async function syncSubscription({
   await attachUserToCustomer(stripe, customerId, userId);
 }
 
+async function handleAetherPackPurchase({
+  supabase,
+  userId,
+  aetherAmount,
+  packId,
+  sessionId,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any;
+  userId: string;
+  aetherAmount: number;
+  packId: string;
+  sessionId: string;
+}) {
+  // Idempotency: skip if this session was already processed
+  const { count } = await supabase
+    .from("aether_transactions")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("transaction_type", "aether_pack_purchase")
+    .contains("metadata", { stripe_session_id: sessionId });
+
+  if ((count ?? 0) > 0) return;
+
+  const { data: currentUser } = await supabase
+    .from("users")
+    .select("aether_balance")
+    .eq("id", userId)
+    .single();
+
+  const newBalance = (currentUser?.aether_balance ?? 0) + aetherAmount;
+
+  await Promise.all([
+    supabase
+      .from("users")
+      .update({ aether_balance: newBalance })
+      .eq("id", userId),
+    supabase.from("aether_transactions").insert({
+      user_id: userId,
+      amount: aetherAmount,
+      transaction_type: "aether_pack_purchase",
+      description: `Purchased ${aetherAmount} Aether pack`,
+      metadata: { pack_id: packId, stripe_session_id: sessionId },
+    }),
+  ]);
+}
+
 async function handleCheckoutCompleted({
   supabase,
   stripe,
@@ -337,6 +384,27 @@ async function handleCheckoutCompleted({
   stripe: ReturnType<typeof getStripeClient>;
   session: Stripe.Checkout.Session;
 }) {
+  // Aether pack (one-time payment) — separate from subscription flow
+  if (session.mode === "payment" && session.metadata?.type === "aether_pack") {
+    const userId =
+      session.client_reference_id ??
+      session.metadata?.user_id ??
+      null;
+    const aetherAmount = parseInt(session.metadata?.aether_amount ?? "0", 10);
+    const packId = session.metadata?.pack_id ?? "unknown";
+
+    if (userId && aetherAmount > 0) {
+      await handleAetherPackPurchase({
+        supabase,
+        userId,
+        aetherAmount,
+        packId,
+        sessionId: session.id,
+      });
+    }
+    return;
+  }
+
   const customerId = typeof session.customer === "string" ? session.customer : null;
   const userId = await resolveUserId({
     supabase,
