@@ -13,13 +13,16 @@ import {
 interface HighPriestessConfirmedEmailProps {
   displayName: string;
   appUrl: string;
+  guideRole?: string | null;
 }
 
 export function HighPriestessConfirmedEmail({
   displayName,
   appUrl,
+  guideRole,
 }: HighPriestessConfirmedEmailProps) {
   const firstName = displayName.split(" ")[0] ?? displayName;
+  const guideTitle = guideRole === "high_priest" ? "High Priest" : "High Priestess";
 
   return (
     <Html>
@@ -43,7 +46,7 @@ export function HighPriestessConfirmedEmail({
                 margin: "0 0 8px 0",
               }}
             >
-              🌙 The Daily Libra · High Priestess
+              🌙 The Daily Libra · {guideTitle}
             </Text>
             <Heading
               style={{
@@ -67,7 +70,7 @@ export function HighPriestessConfirmedEmail({
                 margin: "0 0 16px 0",
               }}
             >
-              High Priestess is active. You now have access to the Guide Studio — your private
+              {guideTitle} is active. You now have access to the Guide Studio — your private
               workspace for managing clients, delivering custom readings, and tracking their
               cosmic journey.
             </Text>

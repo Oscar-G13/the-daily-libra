@@ -59,3 +59,8 @@ export function hasFullAccess(tier: SubscriptionTier | string | null | undefined
 }
 
 export const isGuide = isHighPriestess;
+
+/** Returns the display title for a guide based on their chosen role */
+export function getGuideTitle(role?: string | null): string {
+  return role === "high_priest" ? "High Priest" : "High Priestess";
+}

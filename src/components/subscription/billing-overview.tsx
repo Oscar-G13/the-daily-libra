@@ -8,13 +8,15 @@ import type { BillingSummary } from "@/lib/billing/summary";
 interface BillingOverviewProps {
   summary: BillingSummary;
   showEmptyState?: boolean;
+  guideRole?: string | null;
 }
 
-function TierChip({ tier }: { tier: SubscriptionTier }) {
+function TierChip({ tier, guideRole }: { tier: SubscriptionTier; guideRole?: string | null }) {
   if (tier === "high_priestess") {
+    const label = guideRole === "high_priest" ? "High Priest" : "High Priestess";
     return (
       <span className="rounded-full border border-violet-400/25 bg-violet-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-violet-200">
-        High Priestess
+        {label}
       </span>
     );
   }
@@ -30,7 +32,7 @@ function TierChip({ tier }: { tier: SubscriptionTier }) {
   return null;
 }
 
-export function BillingOverview({ summary, showEmptyState = true }: BillingOverviewProps) {
+export function BillingOverview({ summary, showEmptyState = true, guideRole }: BillingOverviewProps) {
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
 
@@ -70,7 +72,7 @@ export function BillingOverview({ summary, showEmptyState = true }: BillingOverv
               : "You’re on the free tier. Upgrade anytime to unlock Premium or High Priestess."}
           </p>
         </div>
-        <TierChip tier={summary.highestTier} />
+        <TierChip tier={summary.highestTier} guideRole={guideRole} />
       </div>
 
       {summary.products.length ? (

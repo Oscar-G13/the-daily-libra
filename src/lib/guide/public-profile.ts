@@ -36,6 +36,7 @@ export interface PublicGuideProfile {
   clientSlots: number;
   clientsCount: number;
   publishedReadings: number;
+  guideRole: string;
 }
 
 export interface PublicGuideInviteContext {
@@ -71,6 +72,7 @@ function buildPublicGuideProfile(
     clientSlots: guideProfile.client_slots ?? 3,
     clientsCount: guideProfile.clients_count ?? 0,
     publishedReadings,
+    guideRole: (guideProfile as Record<string, unknown>).guide_role as string ?? "high_priestess",
   };
 }
 

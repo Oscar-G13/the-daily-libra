@@ -11,7 +11,7 @@ export default async function SubscriptionPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: subscriptions }, profileResult] = await Promise.all([
+  const [{ data: subscriptions }, profileResult, guideProfileResult] = await Promise.all([
     supabase
       .from("subscriptions")
       .select(
@@ -23,6 +23,12 @@ export default async function SubscriptionPage() {
       .select("subscription_tier, pro_member_since")
       .eq("id", user!.id)
       .single(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("guide_profiles")
+      .select("guide_role")
+      .eq("id", user!.id)
+      .maybeSingle() as Promise<{ data: { guide_role: string | null } | null; error: unknown }>,
   ]);
 
   const summary = buildBillingSummary({
@@ -31,5 +37,5 @@ export default async function SubscriptionPage() {
     proMemberSince: profileResult.data?.pro_member_since ?? null,
   });
 
-  return <SubscriptionClient summary={summary} />;
+  return <SubscriptionClient summary={summary} guideRole={guideProfileResult.data?.guide_role ?? null} />;
 }

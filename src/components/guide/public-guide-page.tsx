@@ -137,7 +137,7 @@ export function PublicGuidePage({ guide, invitation }: PublicGuidePageProps) {
 
               <div className="space-y-5">
                 <p className={cn("text-xs uppercase tracking-[0.35em]", theme.eyebrow)}>
-                  High Priestess Guide
+                  {guide.guideRole === "high_priest" ? "High Priest Guide" : "High Priestess Guide"}
                 </p>
                 <h1 className="mx-auto max-w-4xl font-serif text-display-md leading-tight md:text-display-xl">
                   {guideTitle}
@@ -205,7 +205,7 @@ export function PublicGuidePage({ guide, invitation }: PublicGuidePageProps) {
 
                 <div className="space-y-5">
                   <p className={cn("text-xs uppercase tracking-[0.35em]", theme.eyebrow)}>
-                    High Priestess Guide
+                    {guide.guideRole === "high_priest" ? "High Priest Guide" : "High Priestess Guide"}
                   </p>
                   <h1 className="max-w-3xl font-serif text-display-md leading-tight md:text-display-xl">
                     {guideTitle}

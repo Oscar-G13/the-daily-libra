@@ -8,6 +8,7 @@ import { useState } from "react";
 import { getLevelDef } from "@/lib/gamification/levels";
 import { useGamification } from "@/components/gamification/provider";
 import { XPBar } from "@/components/gamification/xp-bar";
+import { getGuideTitle } from "@/lib/premium";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: "☀️", pro: false },
@@ -45,6 +46,7 @@ interface DashboardSidebarProps {
   initialLevel?: number;
   hasGuidance?: boolean;
   isAdmin?: boolean;
+  guideRole?: string | null;
 }
 
 export function DashboardSidebar({
@@ -54,6 +56,7 @@ export function DashboardSidebar({
   initialLevel = 1,
   hasGuidance = false,
   isAdmin = false,
+  guideRole,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -90,7 +93,7 @@ export function DashboardSidebar({
               : "bg-white/[0.04] text-muted-foreground border border-white/[0.06]"
           )}
         >
-          {tier === "high_priestess" ? "🌙 High Priestess" : tier === "premium" ? "✦ Premium" : "Free"}
+          {tier === "high_priestess" ? `🌙 ${getGuideTitle(guideRole)}` : tier === "premium" ? "✦ Premium" : "Free"}
         </span>
         <p className="text-[10px] text-gold/40 mt-1 tracking-wide">✦ {levelTitle}</p>
       </div>

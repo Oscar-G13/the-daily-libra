@@ -19,6 +19,7 @@ import { CosmicWeatherCard } from "@/components/dashboard/cosmic-weather-card";
 import { HarmonyScoreCard } from "@/components/dashboard/harmony-score-card";
 import { VenusTrackerCard } from "@/components/dashboard/venus-tracker-card";
 import { CosmicEventBanner } from "@/components/dashboard/cosmic-event-banner";
+import { GuideConnectionBanner } from "@/components/dashboard/guide-connection-banner";
 import { formatDate } from "@/lib/utils";
 import { computeAchievements } from "@/lib/gamification/achievements";
 import { computeAllTrophies, TROPHIES } from "@/lib/gamification/trophies";
@@ -28,8 +29,13 @@ import { getVenusStatus, getVenusHouseInsight } from "@/lib/astrology/venus";
 import type { NatalChart, TrophyTier } from "@/types";
 import type { ZodiacSign } from "@/lib/astrology/transits";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ guide_connected?: string }>;
+}) {
   const supabase = await createClient();
+  const resolvedParams = searchParams ? await searchParams : {};
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -162,6 +168,29 @@ export default async function DashboardPage() {
         .limit(3);
     })(),
   ]);
+
+  // Guide connection confirmation — fetch guide name when arriving via invite
+  let guideNameForBanner: string | null = null;
+  if (resolvedParams.guide_connected === "1") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: connectionData } = await (supabase as any)
+      .from("guide_client_connections")
+      .select("guide_id")
+      .eq("client_user_id", user!.id)
+      .eq("status", "active")
+      .order("accepted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle() as { data: { guide_id: string } | null };
+
+    if (connectionData?.guide_id) {
+      const [{ data: guideUser }, { data: guideProfile }] = await Promise.all([
+        supabase.from("users").select("display_name").eq("id", connectionData.guide_id).single(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from("guide_profiles").select("business_name").eq("id", connectionData.guide_id).maybeSingle() as Promise<{ data: { business_name: string | null } | null }>,
+      ]);
+      guideNameForBanner = guideProfile?.business_name ?? guideUser?.display_name ?? "your Guide";
+    }
+  }
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
   const appStreak = userData?.app_streak ?? 0;
@@ -328,6 +357,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      {/* Guide connection confirmation banner */}
+      {guideNameForBanner && <GuideConnectionBanner guideName={guideNameForBanner} />}
+
       {/* Cosmic event banner */}
       {cosmicEvents.length > 0 && <CosmicEventBanner events={cosmicEvents} />}
 

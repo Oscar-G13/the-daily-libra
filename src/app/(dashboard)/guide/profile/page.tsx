@@ -35,6 +35,7 @@ export default function GuideProfilePage() {
   const [profileLayout, setProfileLayout] = useState<GuideProfileLayout>("editorial");
   const [welcomeHeadline, setWelcomeHeadline] = useState("");
   const [ctaLabel, setCtaLabel] = useState("");
+  const [guideRole, setGuideRole] = useState<"high_priestess" | "high_priest">("high_priestess");
   const [referralCode, setReferralCode] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -54,6 +55,7 @@ export default function GuideProfilePage() {
       setProfileLayout((data.guide.profile_layout ?? "editorial") as GuideProfileLayout);
       setWelcomeHeadline(data.guide.welcome_headline ?? "");
       setCtaLabel(data.guide.cta_label ?? "");
+      setGuideRole((data.guide.guide_role ?? "high_priestess") as "high_priestess" | "high_priest");
     }
     setReferralCode(data.guide_user?.referral_code ?? "");
     setLoading(false);
@@ -83,6 +85,7 @@ export default function GuideProfilePage() {
         profile_layout: profileLayout,
         welcome_headline: welcomeHeadline || null,
         cta_label: ctaLabel || null,
+        guide_role: guideRole,
       }),
     });
     setSaved(true);
@@ -165,6 +168,33 @@ export default function GuideProfilePage() {
                 }`}
               />
             </button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs text-muted-foreground uppercase tracking-wide">
+            Your Guide Title
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            {(["high_priestess", "high_priest"] as const).map((role) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setGuideRole(role)}
+                className={`rounded-xl border p-4 text-left transition-all ${
+                  guideRole === role
+                    ? "border-violet-400/30 bg-violet-500/[0.08]"
+                    : "border-white/[0.08] bg-white/[0.02] hover:border-violet-400/20"
+                }`}
+              >
+                <p className="text-sm font-medium text-foreground">
+                  {role === "high_priestess" ? "🌙 High Priestess" : "🌙 High Priest"}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground/60">
+                  {role === "high_priestess" ? "Feminine guide title" : "Masculine guide title"}
+                </p>
+              </button>
+            ))}
           </div>
         </div>
 

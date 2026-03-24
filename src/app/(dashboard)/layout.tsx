@@ -73,7 +73,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/onboarding");
   }
 
-  const [adminProfileResult, guidanceResult] = await Promise.all([
+  const [adminProfileResult, guidanceResult, guideRoleResult] = await Promise.all([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase as any).from("users").select("is_admin").eq("id", user.id).maybeSingle() as Promise<{
       data: AdminProfile | null;
@@ -90,6 +90,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
       data: GuidanceConnection[] | null;
       error: PostgrestError | null;
     }>,
+    // Fetch guide_role for high_priestess tier users (for dynamic title display)
+    profile.subscription_tier === "high_priestess"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? (supabase as any)
+          .from("guide_profiles")
+          .select("guide_role")
+          .eq("id", user.id)
+          .maybeSingle() as Promise<{ data: { guide_role: string | null } | null; error: PostgrestError | null }>
+      : Promise.resolve({ data: null, error: null }),
   ]);
 
   logOptionalDashboardError("is_admin", user.id, adminProfileResult.error);
@@ -97,6 +106,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const hasGuidance = (guidanceResult.data?.length ?? 0) > 0;
   const isAdmin = adminProfileResult.data?.is_admin ?? false;
+  const guideRole = guideRoleResult.data?.guide_role ?? null;
 
   // Update streak — fire and forget, non-blocking
   void (async () => {
@@ -133,6 +143,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           initialLevel={profile?.xp_level ?? 1}
           hasGuidance={hasGuidance}
           isAdmin={isAdmin}
+          guideRole={guideRole}
         />
 
         {/* Main content */}

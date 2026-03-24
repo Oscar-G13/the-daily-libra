@@ -9,9 +9,10 @@ import { BillingOverview } from "@/components/subscription/billing-overview";
 
 interface SubscriptionClientProps {
   summary: BillingSummary;
+  guideRole?: string | null;
 }
 
-export function SubscriptionClient({ summary }: SubscriptionClientProps) {
+export function SubscriptionClient({ summary, guideRole }: SubscriptionClientProps) {
   const [loadingPlan, setLoadingPlan] = useState<BillingPlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +66,7 @@ export function SubscriptionClient({ summary }: SubscriptionClientProps) {
         )}
 
         <div className="space-y-8">
-          <BillingOverview summary={summary} />
+          <BillingOverview summary={summary} guideRole={guideRole} />
 
           <div className="space-y-4">
             <div className="space-y-1">

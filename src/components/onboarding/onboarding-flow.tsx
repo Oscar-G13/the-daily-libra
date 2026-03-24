@@ -58,6 +58,7 @@ export function OnboardingFlow({ userId: _userId, displayName }: OnboardingFlowP
     setSaving(true);
     try {
       const mergedData = { ...data, ...finalData };
+      const hadGuideToken = typeof window !== "undefined" && !!localStorage.getItem("guide_token");
 
       const res = await fetch("/api/onboarding/complete", {
         method: "POST",
@@ -67,7 +68,8 @@ export function OnboardingFlow({ userId: _userId, displayName }: OnboardingFlowP
 
       if (!res.ok) throw new Error("Failed to save onboarding");
 
-      router.push("/dashboard");
+      router.refresh();
+      router.push(hadGuideToken ? "/dashboard?guide_connected=1" : "/dashboard");
     } catch (err) {
       console.error(err);
       setSaving(false);

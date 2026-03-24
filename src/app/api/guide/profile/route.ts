@@ -31,6 +31,7 @@ export async function PATCH(req: NextRequest) {
     "profile_layout",
     "welcome_headline",
     "cta_label",
+    "guide_role",
   ];
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {

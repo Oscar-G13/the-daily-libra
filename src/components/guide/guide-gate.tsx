@@ -10,18 +10,18 @@ export function GuideGate({ feature }: GuideGateProps) {
       <div>
         <span className="text-5xl block mb-4">🌙</span>
         <h1 className="font-serif text-display-xs text-foreground mb-3">
-          High Priestess — Guide Studio
+          Guide Studio
         </h1>
         <p className="text-sm text-muted-foreground/70 leading-relaxed">
           {feature === "guide_studio"
-            ? "The Guide Studio is exclusively available to High Priestess subscribers. Manage clients, deliver personalized readings, and build your practice — all in one place."
-            : "This feature requires the High Priestess tier."}
+            ? "The Guide Studio is exclusively available to High Priestess and High Priest subscribers. Manage clients, deliver personalized readings, and build your practice — all in one place."
+            : "This feature requires the High Priestess or High Priest tier."}
         </p>
       </div>
 
       <div className="glass-card p-6 space-y-3 text-left">
         <p className="text-xs text-gold/60 uppercase tracking-widest mb-4">
-          What you get with High Priestess
+          What you get with the Guide tier
         </p>
         {[
           "Guide Studio with client management dashboard",
@@ -42,7 +42,7 @@ export function GuideGate({ feature }: GuideGateProps) {
         href="/subscription"
         className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-gold-200 to-bronze text-obsidian font-semibold text-sm hover:opacity-90 transition-opacity"
       >
-        Upgrade to High Priestess →
+        Upgrade to Guide Studio →
       </Link>
     </div>
   );
