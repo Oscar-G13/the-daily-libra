@@ -18,6 +18,7 @@ import { DailyChallenges } from "@/components/challenges/daily-challenges";
 import { CosmicWeatherCard } from "@/components/dashboard/cosmic-weather-card";
 import { HarmonyScoreCard } from "@/components/dashboard/harmony-score-card";
 import { VenusTrackerCard } from "@/components/dashboard/venus-tracker-card";
+import { CosmicEventBanner } from "@/components/dashboard/cosmic-event-banner";
 import { formatDate } from "@/lib/utils";
 import { computeAchievements } from "@/lib/gamification/achievements";
 import { computeAllTrophies, TROPHIES } from "@/lib/gamification/trophies";
@@ -57,6 +58,7 @@ export default async function DashboardPage() {
     { data: allReadings },
     { data: earnedAchievementsRows },
     { data: earnedTrophyRows },
+    { data: cosmicEventsRaw },
   ] = await Promise.all([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase as any)
@@ -144,10 +146,37 @@ export default async function DashboardPage() {
       .eq("user_id", user!.id),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase as any).from("user_trophies").select("trophy_id, tier").eq("user_id", user!.id),
+    // Cosmic events — active + upcoming in 7 days
+    (() => {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const sevenDaysOut = new Date();
+      sevenDaysOut.setDate(sevenDaysOut.getDate() + 7);
+      const sevenDaysOutStr = sevenDaysOut.toISOString().split("T")[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (supabase as any)
+        .from("cosmic_events")
+        .select("id, event_name, event_type, start_date, end_date, description, exclusive_content_key, badge_id")
+        .lte("start_date", sevenDaysOutStr)
+        .gte("end_date", todayStr)
+        .order("start_date", { ascending: true })
+        .limit(3);
+    })(),
   ]);
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
   const appStreak = userData?.app_streak ?? 0;
+
+  // Enrich cosmic events with is_active + days_until
+  const todayIso = today.toISOString().split("T")[0];
+  const cosmicEvents = (cosmicEventsRaw ?? []).map(
+    (e: { start_date: string; end_date: string }) => ({
+      ...e,
+      is_active: e.start_date <= todayIso && e.end_date >= todayIso,
+      days_until: e.start_date > todayIso
+        ? Math.ceil((new Date(e.start_date).getTime() - today.getTime()) / 86400000)
+        : 0,
+    })
+  );
 
   // ── Gamification ────────────────────────────────────────────────────────────
   const categoriesUsed = Array.from(new Set((allReadings ?? []).map((r) => r.category as string)));
@@ -299,6 +328,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      {/* Cosmic event banner */}
+      {cosmicEvents.length > 0 && <CosmicEventBanner events={cosmicEvents} />}
+
       {/* Header */}
       <div>
         <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">

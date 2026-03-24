@@ -7,6 +7,7 @@ import type { GamificationResult, XPAction, TrophyTier } from "@/types";
 import { getLevelFromXP } from "./levels";
 import { computeAchievements, getNewlyUnlocked, ACHIEVEMENTS } from "./achievements";
 import { getNewlyEarnedTiers, TROPHIES } from "./trophies";
+import { awardCosmicCards } from "./cards";
 import type { AchievementStats } from "./achievements";
 import type { TrophyStats } from "./trophies";
 
@@ -17,6 +18,7 @@ export const XP_VALUES: Record<XPAction, number> = {
   companion: 10,
   ritual: 15,
   streak_bonus: 5,
+  ritual_bonus: 25,
 };
 
 // ─── Main function ────────────────────────────────────────────────────────────
@@ -227,6 +229,18 @@ export async function awardXP(
     tier,
   }));
 
+  // 7. Award cosmic cards based on current stats
+  const newCards = await awardCosmicCards(userId, {
+    appStreak,
+    readingCount: readingCount ?? 0,
+    archetype: libraProfile?.primary_archetype ?? undefined,
+    hasFirstReading: (readingCount ?? 0) === 1 && action === "reading",
+    hasFirstJournal: (journalCount ?? 0) === 1 && action === "journal",
+    hasShadowReading: categoriesUsed.includes("shadow"),
+    soulSyncDays,
+    firstOracle: (aiMemory?.length ?? 0) === 1 && action === "companion",
+  }, supabase);
+
   return {
     xpAwarded,
     newTotal,
@@ -235,6 +249,7 @@ export async function awardXP(
     leveledUp,
     newAchievements: newlyUnlockedAchievements,
     newTrophies,
+    newCards,
   };
 }
 

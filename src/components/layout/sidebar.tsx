@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { getLevelDef } from "@/lib/gamification/levels";
+import { useGamification } from "@/components/gamification/provider";
 import { XPBar } from "@/components/gamification/xp-bar";
 
 const NAV_ITEMS = [
@@ -17,11 +19,14 @@ const NAV_ITEMS = [
   { href: "/red-flag", label: "Red Flag Decoder", icon: "🚩", pro: true },
   { href: "/cosmic-room", label: "Cosmic Room", icon: "✦", pro: true },
   { href: "/moon", label: "Moon Calendar", icon: "🌙", pro: false },
+  { href: "/cosmic-outlook", label: "Cosmic Outlook", icon: "🌠", pro: false },
   { href: "/profile", label: "My Profile", icon: "♎", pro: false },
   { href: "/aesthetic", label: "Aesthetic Profile", icon: "♀", pro: false },
   { href: "/chart", label: "Birth Chart", icon: "✦", pro: false },
+  { href: "/oracle", label: "Celestial Oracle", icon: "🔮", pro: false },
   { href: "/companion", label: "AI Companion", icon: "🪞", pro: false },
   { href: "/journal", label: "Journal", icon: "📖", pro: false },
+  { href: "/collection", label: "Cosmic Collection", icon: "🃏", pro: false },
   { href: "/community", label: "The Collective", icon: "🌐", pro: false },
   { href: "/subscription", label: "Premium", icon: "💎", pro: false },
   { href: "/settings", label: "Settings", icon: "⚙️" },
@@ -52,6 +57,8 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { xpLevel } = useGamification();
+  const levelTitle = getLevelDef(xpLevel || initialLevel).name;
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
@@ -85,6 +92,7 @@ export function DashboardSidebar({
         >
           {tier === "high_priestess" ? "🌙 High Priestess" : tier === "premium" ? "✦ Premium" : "Free"}
         </span>
+        <p className="text-[10px] text-gold/40 mt-1 tracking-wide">✦ {levelTitle}</p>
       </div>
 
       {/* XP Bar */}

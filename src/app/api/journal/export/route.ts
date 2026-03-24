@@ -1,0 +1,199 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+// GET /api/journal/export
+// Returns journal entries as a downloadable HTML "Cosmic Story" file
+
+export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const [{ data: entries }, { data: userData }] = await Promise.all([
+    supabase
+      .from("journal_entries")
+      .select("id, title, body, mood_tag, mood_score, entry_date, created_at")
+      .eq("user_id", user.id)
+      .order("entry_date", { ascending: true }),
+    supabase
+      .from("users")
+      .select("display_name")
+      .eq("id", user.id)
+      .single(),
+  ]);
+
+  const displayName = userData?.display_name ?? "Libra";
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const entryList = entries ?? [];
+
+  const moodEmoji = (score: number | null) => {
+    if (!score) return "";
+    if (score >= 8) return "✦";
+    if (score >= 6) return "◉";
+    if (score >= 4) return "◎";
+    return "○";
+  };
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Cosmic Story of ${displayName}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0b;
+      color: #e5e5e5;
+      line-height: 1.7;
+      padding: 3rem 1rem;
+    }
+
+    .container { max-width: 680px; margin: 0 auto; }
+
+    .cover {
+      text-align: center;
+      padding: 4rem 0 5rem;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+      margin-bottom: 4rem;
+    }
+
+    .symbol {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      color: rgba(201, 168, 76, 0.6);
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.25rem;
+      font-weight: 400;
+      color: #e5e5e5;
+      margin-bottom: 0.75rem;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .entry {
+      margin-bottom: 3rem;
+      padding-bottom: 3rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .entry:last-child { border-bottom: none; }
+
+    .entry-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .entry-date {
+      font-size: 0.7rem;
+      color: rgba(201, 168, 76, 0.5);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .entry-mood {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.4);
+    }
+
+    .entry-score {
+      font-size: 0.8rem;
+      color: rgba(201, 168, 76, 0.5);
+    }
+
+    .entry-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      color: #e5e5e5;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .entry-body {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.7);
+      white-space: pre-wrap;
+      line-height: 1.8;
+    }
+
+    .footer {
+      text-align: center;
+      padding-top: 4rem;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.05em;
+    }
+
+    @media print {
+      body { background: white; color: #1a1a1a; }
+      .entry-body { color: #444; }
+      .entry-date, .entry-score { color: #888; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="cover">
+      <div class="symbol">⚖</div>
+      <h1>The Cosmic Story<br>of ${displayName}</h1>
+      <p class="subtitle">A Libra Journal · ${today}</p>
+    </div>
+
+    ${entryList.length === 0 ? '<p style="text-align:center;color:rgba(255,255,255,0.3)">Your story begins with the first entry.</p>' : ""}
+
+    ${entryList
+      .map((entry) => {
+        const date = new Date(entry.entry_date).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        return `
+    <div class="entry">
+      <div class="entry-meta">
+        <span class="entry-date">${date}</span>
+        ${entry.mood_tag ? `<span class="entry-mood">${entry.mood_tag}</span>` : ""}
+        ${entry.mood_score ? `<span class="entry-score">${moodEmoji(entry.mood_score)} ${entry.mood_score}/10</span>` : ""}
+      </div>
+      ${entry.title ? `<h2 class="entry-title">${entry.title.replace(/</g, "&lt;")}</h2>` : ""}
+      <p class="entry-body">${(entry.body ?? "").replace(/</g, "&lt;")}</p>
+    </div>`;
+      })
+      .join("")}
+
+    <div class="footer">
+      <p>Generated by The Daily Libra · Your chart. Your balance. ⚖</p>
+      <p style="margin-top:0.5rem">${entryList.length} entries · Exported ${today}</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Disposition": `attachment; filename="cosmic-story-${new Date().toISOString().split("T")[0]}.html"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}

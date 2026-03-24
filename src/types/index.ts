@@ -205,7 +205,7 @@ export interface QuizResult {
 
 // ─── Gamification ─────────────────────────────────────────────────────────────
 
-export type XPAction = "reading" | "journal" | "mood" | "companion" | "ritual" | "streak_bonus";
+export type XPAction = "reading" | "journal" | "mood" | "companion" | "ritual" | "streak_bonus" | "ritual_bonus";
 export type TrophyTier = "bronze" | "silver" | "gold" | "platinum";
 
 export interface AchievementDef {
@@ -251,4 +251,5 @@ export interface GamificationResult {
   leveledUp: boolean;
   newAchievements: AchievementStatus[];
   newTrophies: { trophy: TrophyDef; tier: TrophyTier }[];
+  newCards?: string[];
 }

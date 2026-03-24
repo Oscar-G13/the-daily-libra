@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { hasFullAccess } from "@/lib/premium";
 import { JournalView } from "@/components/journal/journal-view";
+import { PatternInsights } from "@/components/journal/pattern-insights";
 
 export const metadata = { title: "Journal" };
 
@@ -36,6 +37,10 @@ export default async function JournalPage() {
         initialEntries={entries ?? []}
         isPremium={hasFullAccess(userData?.subscription_tier)}
       />
+
+      <div className="mt-6">
+        <PatternInsights />
+      </div>
     </div>
   );
 }
