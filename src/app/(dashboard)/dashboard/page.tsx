@@ -20,6 +20,8 @@ import { HarmonyScoreCard } from "@/components/dashboard/harmony-score-card";
 import { VenusTrackerCard } from "@/components/dashboard/venus-tracker-card";
 import { CosmicEventBanner } from "@/components/dashboard/cosmic-event-banner";
 import { GuideConnectionBanner } from "@/components/dashboard/guide-connection-banner";
+import { GuideCard } from "@/components/dashboard/guide-card";
+import { AetherBalanceCard } from "@/components/dashboard/aether-balance-card";
 import { formatDate } from "@/lib/utils";
 import { computeAchievements } from "@/lib/gamification/achievements";
 import { computeAllTrophies, TROPHIES } from "@/lib/gamification/trophies";
@@ -39,6 +41,8 @@ export default async function DashboardPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const isFirstGuideConnect = resolvedParams.guide_connected === "1";
 
   // 14-day window for mood trend
   const today = new Date();
@@ -70,7 +74,7 @@ export default async function DashboardPage({
     (supabase as any)
       .from("users")
       .select(
-        "display_name, tone_preference, subscription_tier, app_streak, last_active_date, xp_total, xp_level, weekly_xp, weekly_xp_best"
+        "display_name, tone_preference, subscription_tier, app_streak, last_active_date, xp_total, xp_level, weekly_xp, weekly_xp_best, aether_balance"
       )
       .eq("id", user!.id)
       .single() as Promise<{
@@ -84,6 +88,7 @@ export default async function DashboardPage({
         xp_level: number | null;
         weekly_xp: number | null;
         weekly_xp_best: number | null;
+        aether_balance: number | null;
       } | null;
     }>,
     supabase.from("birth_profiles").select("natal_chart_json").eq("user_id", user!.id).single(),
@@ -169,27 +174,48 @@ export default async function DashboardPage({
     })(),
   ]);
 
-  // Guide connection confirmation — fetch guide name when arriving via invite
-  let guideNameForBanner: string | null = null;
-  if (resolvedParams.guide_connected === "1") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: connectionData } = await (supabase as any)
-      .from("guide_client_connections")
-      .select("guide_id")
-      .eq("client_user_id", user!.id)
-      .eq("status", "active")
-      .order("accepted_at", { ascending: false })
-      .limit(1)
-      .maybeSingle() as { data: { guide_id: string } | null };
+  // Always fetch the user's guide connection (permanent display + first-connect banner)
+  let guideInfo: {
+    name: string;
+    slug: string | null;
+    role: string | null;
+    tagline: string | null;
+  } | null = null;
 
-    if (connectionData?.guide_id) {
-      const [{ data: guideUser }, { data: guideProfile }] = await Promise.all([
-        supabase.from("users").select("display_name").eq("id", connectionData.guide_id).single(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).from("guide_profiles").select("business_name").eq("id", connectionData.guide_id).maybeSingle() as Promise<{ data: { business_name: string | null } | null }>,
-      ]);
-      guideNameForBanner = guideProfile?.business_name ?? guideUser?.display_name ?? "your Guide";
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: connectionData } = await (supabase as any)
+    .from("guide_client_connections")
+    .select("guide_id")
+    .eq("client_user_id", user!.id)
+    .eq("status", "active")
+    .order("accepted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle() as { data: { guide_id: string } | null };
+
+  if (connectionData?.guide_id) {
+    const [{ data: guideUser }, { data: guideProfile }] = await Promise.all([
+      supabase.from("users").select("display_name").eq("id", connectionData.guide_id).single(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any)
+        .from("guide_profiles")
+        .select("business_name, tagline, referral_code, guide_role")
+        .eq("id", connectionData.guide_id)
+        .maybeSingle() as Promise<{
+          data: {
+            business_name: string | null;
+            tagline: string | null;
+            referral_code: string | null;
+            guide_role: string | null;
+          } | null;
+        }>,
+    ]);
+
+    guideInfo = {
+      name: guideProfile?.business_name ?? guideUser?.display_name ?? "your Guide",
+      slug: guideProfile?.referral_code ?? null,
+      role: guideProfile?.guide_role ?? null,
+      tagline: guideProfile?.tagline ?? null,
+    };
   }
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
@@ -355,10 +381,24 @@ export default async function DashboardPage({
   const ascendantSign = chart?.ascendant?.sign as ZodiacSign | undefined;
   const houseInsight = ascendantSign ? getVenusHouseInsight(venus.sign, ascendantSign) : undefined;
 
+  const aetherBalance = userData?.aether_balance ?? 0;
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Guide connection confirmation banner */}
-      {guideNameForBanner && <GuideConnectionBanner guideName={guideNameForBanner} />}
+      {/* First-connect welcome banner (one-time dismissable) */}
+      {isFirstGuideConnect && guideInfo && (
+        <GuideConnectionBanner guideName={guideInfo.name} />
+      )}
+
+      {/* Permanent guide card — always visible when user has a guide */}
+      {guideInfo && !isFirstGuideConnect && (
+        <GuideCard
+          guideName={guideInfo.name}
+          guideSlug={guideInfo.slug}
+          guideRole={guideInfo.role}
+          guideTagline={guideInfo.tagline}
+        />
+      )}
 
       {/* Cosmic event banner */}
       {cosmicEvents.length > 0 && <CosmicEventBanner events={cosmicEvents} />}
@@ -372,6 +412,9 @@ export default async function DashboardPage({
           Good to see you, {userData?.display_name?.split(" ")[0] ?? "Libra"}.
         </h1>
       </div>
+
+      {/* Aether balance */}
+      <AetherBalanceCard balance={aetherBalance} />
 
       {/* Primary grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

@@ -21,16 +21,37 @@ export default async function ProfilePage() {
     supabase.from("birth_profiles").select("*").eq("user_id", user!.id).single(),
   ]);
 
-  // Fetch referrer if user was invited
+  // Fetch referrer + guide info if user was invited
   const referredBy = (userData as any)?.referred_by as string | null;
-  let referrer: { display_name: string | null; avatar_url: string | null; referral_code: string | null } | null = null;
-  if (referredBy) {
+  const inviterRemoved = (userData as any)?.inviter_removed as boolean ?? false;
+  let referrer: {
+    display_name: string | null;
+    avatar_url: string | null;
+    referral_code: string | null;
+    subscription_tier: string | null;
+  } | null = null;
+  let referrerGuideProfile: {
+    business_name: string | null;
+    tagline: string | null;
+    guide_role: string | null;
+  } | null = null;
+
+  if (referredBy && !inviterRemoved) {
     const { data } = await (supabase as any)
       .from("users")
-      .select("display_name, avatar_url, referral_code")
+      .select("display_name, avatar_url, referral_code, subscription_tier")
       .eq("id", referredBy)
       .single();
     referrer = data;
+
+    if (referrer?.subscription_tier === "high_priestess") {
+      const { data: gp } = await (supabase as any)
+        .from("guide_profiles")
+        .select("business_name, tagline, guide_role")
+        .eq("id", referredBy)
+        .maybeSingle();
+      referrerGuideProfile = gp;
+    }
   }
 
   const chart = birthProfile?.natal_chart_json as NatalChart | null;
@@ -93,41 +114,42 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* Invited by badge */}
-      {referrer && (
-        <div className="glass-card px-5 py-3 flex items-center gap-3 border border-gold/10">
-          {referrer.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={referrer.avatar_url}
-              alt={referrer.display_name ?? ""}
-              className="w-8 h-8 rounded-full object-cover border border-gold/20"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-sm">
-              ♎
+      {/* Guide / Invited by badge */}
+      {referrer && (() => {
+        const isGuide = referrer.subscription_tier === "high_priestess";
+        const guideName = referrerGuideProfile?.business_name ?? referrer.display_name ?? "A fellow Libra";
+        const guideRole = referrerGuideProfile?.guide_role;
+        const roleLabel = guideRole === "high_priest" ? "High Priest" : "High Priestess";
+
+        return (
+          <div className={`glass-card px-5 py-4 flex items-center gap-3 border ${isGuide ? "border-violet-500/25 bg-violet-500/[0.04]" : "border-gold/10"}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base shrink-0 ${isGuide ? "bg-violet-500/10 border border-violet-500/20" : "bg-gold/10 border border-gold/20"}`}>
+              {isGuide ? "🌙" : "♎"}
             </div>
-          )}
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground">Invited by</p>
-            {referrer.referral_code ? (
-              <Link
-                href={`/join/${referrer.referral_code}`}
-                className="text-sm text-gold/70 hover:text-gold transition-colors font-medium"
-              >
-                {referrer.display_name ?? "A fellow Libra"}
-              </Link>
-            ) : (
-              <p className="text-sm text-foreground/80 font-medium">
-                {referrer.display_name ?? "A fellow Libra"}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground">
+                {isGuide ? `Your ${roleLabel}` : "Invited by"}
               </p>
-            )}
+              {referrer.referral_code ? (
+                <Link
+                  href={isGuide ? `/guides/${referrer.referral_code}` : `/join/${referrer.referral_code}`}
+                  className={`text-sm font-medium transition-colors ${isGuide ? "text-violet-200 hover:text-violet-100" : "text-gold/70 hover:text-gold"}`}
+                >
+                  {guideName}
+                </Link>
+              ) : (
+                <p className="text-sm text-foreground/80 font-medium">{guideName}</p>
+              )}
+              {isGuide && referrerGuideProfile?.tagline && (
+                <p className="text-xs text-violet-300/50 mt-0.5 truncate">{referrerGuideProfile.tagline}</p>
+              )}
+            </div>
+            <span className={`text-xs px-2.5 py-1 rounded-full border shrink-0 ${isGuide ? "bg-violet-500/[0.08] text-violet-400 border-violet-500/20" : "bg-gold/[0.08] text-gold/60 border-gold/10"}`}>
+              {isGuide ? "🌙 Guide" : "✦ Invited"}
+            </span>
           </div>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gold/[0.08] text-gold/60 border border-gold/10">
-            ✦ Invited
-          </span>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Archetype section */}
       {archetype && archetypeData && (

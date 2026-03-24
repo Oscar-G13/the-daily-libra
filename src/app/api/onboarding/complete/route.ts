@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { calculateNatalChart } from "@/lib/astrology/chart";
 
 export async function POST(req: NextRequest) {
@@ -106,6 +106,42 @@ export async function POST(req: NextRequest) {
       });
       throw userError ?? new Error("Onboarding state did not persist");
     }
+
+    // Award 75 Aether signup bonus (fire-and-forget, non-blocking)
+    void (async () => {
+      try {
+        const service = await createServiceClient();
+        // Only award once — check no existing signup_bonus transaction
+        const { count } = await (service as any)
+          .from("aether_transactions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("transaction_type", "signup_bonus");
+
+        if ((count ?? 0) === 0) {
+          const { data: currentUser } = await (service as any)
+            .from("users")
+            .select("aether_balance")
+            .eq("id", user.id)
+            .single();
+
+          await Promise.all([
+            (service as any)
+              .from("users")
+              .update({ aether_balance: (currentUser?.aether_balance ?? 0) + 75 })
+              .eq("id", user.id),
+            (service as any).from("aether_transactions").insert({
+              user_id: user.id,
+              amount: 75,
+              transaction_type: "signup_bonus",
+              description: "Welcome gift — 75 Aether to start your journey ✦",
+            }),
+          ]);
+        }
+      } catch (e) {
+        console.error("Aether signup bonus error:", e);
+      }
+    })();
 
     return NextResponse.json({ success: true });
   } catch (error) {

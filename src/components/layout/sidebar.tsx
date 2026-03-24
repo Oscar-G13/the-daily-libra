@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   { href: "/journal", label: "Journal", icon: "📖", pro: false },
   { href: "/collection", label: "Cosmic Collection", icon: "🃏", pro: false },
   { href: "/community", label: "The Collective", icon: "🌐", pro: false },
+  { href: "/shop", label: "Aether Shop", icon: "✦", pro: false },
   { href: "/subscription", label: "Premium", icon: "💎", pro: false },
   { href: "/settings", label: "Settings", icon: "⚙️" },
 ];
