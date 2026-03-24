@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS public.cosmic_events (
   end_date         DATE NOT NULL,
   description      TEXT,
   exclusive_content_key TEXT,  -- reading category key unlocked during this event
-  badge_id         TEXT,       -- achievement_id awarded on participation
-  is_active        BOOLEAN GENERATED ALWAYS AS (current_date BETWEEN start_date AND end_date) STORED
+  badge_id         TEXT        -- achievement_id awarded on participation
+  -- is_active is computed at query time via start_date/end_date range filters
 );
 
 ALTER TABLE public.cosmic_events ENABLE ROW LEVEL SECURITY;
